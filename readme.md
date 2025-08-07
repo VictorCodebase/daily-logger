@@ -107,19 +107,19 @@ The final stage of the workflow. The user will:
 Here is a suggested folder structure for your Daily Logger app, designed to align with the **MVVM (Model-View-ViewModel)** architecture and best practices for React Native and Expo.
 
 #### Project Structure Overview
-daily-logger/
-├── assets/
-├── components/
-├── navigation/
-├── screens/
-├── services/
-├── stores/
-├── utils/
-├── App.tsx
-├── app.json
-├── package.json
-└── ...
-
+daily-logger/  
+├── assets/  
+├── components/  
+├── navigation/  
+├── screens/  
+├── services/  
+├── stores/  
+├── utils/  
+├── App.tsx  
+├── app.json  
+├── package.json  
+└── ...  
+  
 #### Directory Breakdown
 
 **`assets/`**
