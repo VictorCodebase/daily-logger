@@ -1,20 +1,36 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, ActivityIndicator, Text } from "react-native";
+import AppNavigator from "./navigation/AppNavigator";
+import { UserProvider } from "./context/UserContext";
+import setupDatabase from "./services/DatabaseService";
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+	const [isDbReady, setIsDbReady] = useState(false);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+	useEffect(() => {
+		const initialize = async () => {
+			try {
+				await setupDatabase();
+				setIsDbReady(true);
+			} catch (error) {
+				console.error("Failed to initialize database:", error);
+			}
+		};
+		initialize();
+	}, []);
+
+	if (!isDbReady) {
+		return (
+			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+				<ActivityIndicator size="large" />
+				<Text style={{ marginTop: 10 }}>Initializing database...</Text>
+			</View>
+		);
+	}
+
+	return (
+		<UserProvider>
+			<AppNavigator />
+		</UserProvider>
+	);
+}
