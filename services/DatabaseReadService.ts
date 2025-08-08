@@ -213,3 +213,14 @@ export async function readExportTemplate(export_template_id: number): Promise<Ex
 		return null;
 	}
 }
+
+export async function readAllTableData(tableName:string) {
+    try{
+        const db = await setupDatabase();
+        const result = await db.getAllAsync(`SELECT * FROM ${tableName}`);
+        return result
+    } catch (error){
+        console.error("Error reading the table: ", tableName, "\n ", error)
+        return null
+    }
+}
