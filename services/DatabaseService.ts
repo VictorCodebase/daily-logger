@@ -91,6 +91,7 @@ async function createTables(db: SQLite.SQLiteDatabase) {
                     date_created TEXT
                 );
             `),
+
 		]);
 
 		console.log("All tables created successfully.");
