@@ -58,7 +58,7 @@ export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivi
 			{/* Header */}
 			<View style={tw`flex-row items-center justify-between mb-4`}>
 				<View style={tw`flex-row items-center`}>
-					<View style={tw`w-10 h-10 bg-[${colors.primary.surface}] rounded-xl items-center justify-center mr-3`}>
+					<View style={tw`w-10 h-10 bg-[${colors.surface.elevated}] rounded-xl items-center justify-center mr-3`}>
 						<Feather name="activity" size={18} color={colors.primary.main} />
 					</View>
 					<Text style={tw`text-base font-semibold text-[${colors.text.primary}]`}>

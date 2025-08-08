@@ -23,12 +23,19 @@ export const colors = {
 		tertiary: "#9CA3AF",
 		placeholder: "#A0A0A0",
 		white: "#FFFFFF",
+		inverse: "#FFFFFF",
 	},
 
+	// border: {
+	// 	light: "#E5E7EB",
+	// 	medium: "#D1D5DB",
+	// 	dark: "#9CA3AF",
+	// 	focus: "#4CAF50",
+	// },
 	border: {
-		light: "#E5E7EB",
-		medium: "#D1D5DB",
-		dark: "#9CA3AF",
+		primary: "#E5E7EB",
+		secondary: "#D1D5DB",
+		tertiary: "#9CA3AF",
 		focus: "#4CAF50",
 	},
 

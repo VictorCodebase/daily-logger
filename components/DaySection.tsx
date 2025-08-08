@@ -78,7 +78,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 				{/* Time In */}
 				<View style={tw`flex-row items-center justify-between mb-4`}>
 					<View style={tw`flex-row items-center flex-1`}>
-						<View style={tw`w-10 h-10 bg-[${colors.primary.surface}] rounded-xl items-center justify-center mr-3`}>
+						<View style={tw`w-10 h-10 bg-[${colors.surface.elevated}] rounded-xl items-center justify-center mr-3`}>
 							<Feather name="clock" size={18} color={colors.primary.main} />
 						</View>
 						<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>Time in</Text>
@@ -116,7 +116,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 				{/* Time Out */}
 				<View style={tw`flex-row items-center justify-between`}>
 					<View style={tw`flex-row items-center flex-1`}>
-						<View style={tw`w-10 h-10 bg-[${colors.primary.surface}] rounded-xl items-center justify-center mr-3`}>
+						<View style={tw`w-10 h-10 bg-[${colors.surface.elevated}] rounded-xl items-center justify-center mr-3`}>
 							<Feather name="clock" size={18} color={colors.primary.main} />
 						</View>
 						<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>Time out</Text>

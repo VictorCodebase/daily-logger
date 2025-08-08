@@ -4,7 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Alert } fro
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
-import { colors } from "../themes/theme";
+import { colors } from "../themes/colors";
 
 interface SaveTemplateModalProps {
 	visible: boolean;
@@ -148,7 +148,7 @@ export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({ visible, o
 								style={tw`flex-1 py-4 px-6 ${
 									name.trim() && !isSubmitting
 										? `bg-[${colors.primary.main}]`
-										: `bg-[${colors.interactive.disabled}]`
+										: `bg-[${colors.surface.disabled}]`
 								} rounded-xl items-center flex-row justify-center`}
 								onPress={handleSubmit}
 								disabled={!name.trim() || isSubmitting}
