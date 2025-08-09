@@ -1,6 +1,5 @@
-// screens/HomeScreen.tsx
-import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Alert, Modal, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
@@ -10,9 +9,17 @@ import { DaySection } from "../components/homeComponents/DaySection";
 import { ActivityBlock } from "../components/homeComponents/ActivityBlock";
 import { SpecialActivityBlock } from "../components/homeComponents/SpecialActivityBlock";
 import { SaveTemplateModal } from "../components/modals/SaveTemplateModal";
-import { saveActivities, createTemplate } from "../stores/HomeViewModel";
-import { getFormattedDate, getFormattedTime } from "../utils/DateFormatUtil";
+import ApplyTemplateModal from "../components/modals/ApplyTemplateModal";
+import { saveActivities, createTemplate, listTemplates, acquireTemplate, TemplateContent } from "../stores/HomeViewModel";
+import { getFormattedDate } from "../utils/DateFormatUtil";
 import { RawDate, RawActivity } from "../models/view_Models";
+
+// A small interface for the template "glimpse" returned by the DB
+interface TemplateGlimpse {
+	log_template_id: number;
+	name: string;
+	color_code: string;
+}
 
 const HomeScreen: React.FC = () => {
 	// Day section state
@@ -24,20 +31,65 @@ const HomeScreen: React.FC = () => {
 
 	// Activities state
 	const [activities, setActivities] = useState<RawActivity[]>([{ content: "", category: "", time_start: "", time_end: "" }]);
-
 	const [specialActivities, setSpecialActivities] = useState<RawActivity[]>([]);
 
-	// Modal state
-	const [isTemplateModalVisible, setIsTemplateModalVisible] = useState(false);
+	// Modal states
+	const [isSaveTemplateModalVisible, setIsSaveTemplateModalVisible] = useState(false);
+	const [isApplyTemplateModalVisible, setIsApplyTemplateModalVisible] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
+	// Template states
+	const [availableTemplates, setAvailableTemplates] = useState<TemplateGlimpse[]>([]);
+	const [appliedTemplate, setAppliedTemplate] = useState<{ name: string; color: string } | null>(null);
+
+	// Fetch templates on component load
+	useEffect(() => {
+		const fetchTemplates = async () => {
+			const templates = await listTemplates();
+			if (templates) {
+				setAvailableTemplates(templates);
+			}
+		};
+		fetchTemplates();
+	}, []);
+
+	// --- Template Application Logic ---
+	const handleApplyTemplate = async (templateId: number) => {
+		setIsLoading(true);
+		const templateData = await acquireTemplate(templateId);
+		setIsLoading(false);
+		if (templateData) {
+			setDayData(templateData.content.dayData);
+			setActivities(
+				templateData.content.activities.length > 0
+					? templateData.content.activities
+					: [{ content: "", category: "", time_start: "", time_end: "" }]
+			);
+			setSpecialActivities(templateData.content.specialActivities);
+			setAppliedTemplate({ name: templateData.name, color: templateData.color });
+			setIsApplyTemplateModalVisible(false);
+			Alert.alert("Template Applied", `The template '${templateData.name}' has been applied.`);
+		} else {
+			Alert.alert("Error", "Failed to load template data.");
+		}
+	};
+
+	const handleUnapplyTemplate = () => {
+		setDayData({ date: getFormattedDate(), time_in: "", time_out: "" });
+		setActivities([{ content: "", category: "", time_start: "", time_end: "" }]);
+		setSpecialActivities([]);
+		setAppliedTemplate(null);
+		Alert.alert("Template Unapplied", "All fields have been reset.");
+	};
+
+	// --- Activity Management Logic ---
 	const addActivity = () => {
 		setActivities([...activities, { content: "", category: "", time_start: "", time_end: "" }]);
 	};
 
 	const removeActivity = (index: number) => {
 		if (activities.length > 1) {
-			// Keep at least one activity
 			setActivities(activities.filter((_, i) => i !== index));
 		}
 	};
@@ -62,32 +114,27 @@ const HomeScreen: React.FC = () => {
 		setSpecialActivities(newSpecialActivities);
 	};
 
+	// --- Form Submission Logic ---
 	const validateForm = (): boolean => {
-		// Check if at least one activity has content
 		const hasValidActivity = activities.some((activity) => activity.content.trim() !== "");
-
 		if (!hasValidActivity) {
 			Alert.alert("Validation Error", "At least one activity must have details filled out.");
 			return false;
 		}
-
 		return true;
 	};
 
 	const handleSave = async (): Promise<boolean> => {
 		if (!validateForm()) return false;
-
 		setIsSaving(true);
 		try {
-			const success = await saveActivities(dayData, activities, specialActivities);
-
+			const success = await saveActivities(dayData.date, activities, specialActivities);
 			if (success) {
 				Alert.alert("Success", "Activities saved successfully!");
+				handleUnapplyTemplate(); // Reset the form after saving
 			} else {
 				Alert.alert("Error", "Failed to save activities. Please try again.");
 			}
-
-			setActivities([{ content: "", category: "", time_start: "", time_end: "" }]);
 			return success;
 		} catch (error) {
 			Alert.alert("Error", "An unexpected error occurred.");
@@ -98,11 +145,7 @@ const HomeScreen: React.FC = () => {
 	};
 
 	const handleSaveTemplate = async () => {
-		// const saveSuccess = await handleSave();
-
-		// if (saveSuccess) {
-		setIsTemplateModalVisible(true);
-		// }
+		setIsSaveTemplateModalVisible(true);
 	};
 
 	const handleTemplateSubmit = async (name: string, description: string, colorCode: string) => {
@@ -114,10 +157,14 @@ const HomeScreen: React.FC = () => {
 
 		try {
 			const success = await createTemplate(name, description, colorCode, contentJson);
-
 			if (success) {
 				Alert.alert("Success", "Template saved successfully!");
-				setIsTemplateModalVisible(false);
+				setIsSaveTemplateModalVisible(false);
+				// Refresh the list of available templates
+				const updatedTemplates = await listTemplates();
+				if (updatedTemplates) {
+					setAvailableTemplates(updatedTemplates);
+				}
 			} else {
 				Alert.alert("Error", "Failed to save template. Please try again.");
 			}
@@ -128,6 +175,11 @@ const HomeScreen: React.FC = () => {
 
 	return (
 		<SafeAreaView style={tw`flex-1 bg-[${colors.background.primary}]`}>
+			{isLoading && (
+				<View style={tw`absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40`}>
+					<ActivityIndicator size="large" color={colors.primary.main} />
+				</View>
+			)}
 			<ScrollView style={tw`flex-1`} contentContainerStyle={tw`pb-28`} showsVerticalScrollIndicator={false}>
 				{/* Header */}
 				<View style={tw`p-6`}>
@@ -136,8 +188,38 @@ const HomeScreen: React.FC = () => {
 					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>08.08.2025</Text>
 				</View>
 
+				{/* Apply Template Button */}
+				{availableTemplates.length > 0 && !appliedTemplate && (
+					<View style={tw`px-4`}>
+						<TouchableOpacity
+							style={tw`flex-row items-center justify-center py-3 bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl`}
+							onPress={() => setIsApplyTemplateModalVisible(true)}
+						>
+							<Feather name="layers" size={18} color={colors.primary.main} />
+							<Text style={tw`ml-2 text-[${colors.primary.main}] font-medium`}>Apply Template</Text>
+						</TouchableOpacity>
+					</View>
+				)}
+
+				{/* Applied Template Message */}
+				{appliedTemplate && (
+					<View
+						style={tw`mx-4 mt-4 flex-row items-center justify-between p-3 bg-[${colors.surface.elevated}] rounded-xl border border-[${colors.border.primary}]`}
+					>
+						<View style={tw`flex-row items-center`}>
+							<View style={tw`w-3 h-3 rounded-full mr-2`} style={{ backgroundColor: appliedTemplate.color }} />
+							<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>
+								Applied '{appliedTemplate.name}' template
+							</Text>
+						</View>
+						<TouchableOpacity onPress={handleUnapplyTemplate} style={tw`p-1`}>
+							<Feather name="x" size={18} color={colors.text.secondary} />
+						</TouchableOpacity>
+					</View>
+				)}
+
 				{/* Day Section */}
-				<View style={tw`px-4`}>
+				<View style={tw`px-4 mt-4`}>
 					<DaySection dayData={dayData} onDayDataChange={setDayData} />
 				</View>
 
@@ -220,7 +302,19 @@ const HomeScreen: React.FC = () => {
 			</View>
 
 			{/* Save Template Modal */}
-			<SaveTemplateModal visible={isTemplateModalVisible} onClose={() => setIsTemplateModalVisible(false)} onSubmit={handleTemplateSubmit} />
+			<SaveTemplateModal
+				visible={isSaveTemplateModalVisible}
+				onClose={() => setIsSaveTemplateModalVisible(false)}
+				onSubmit={handleTemplateSubmit}
+			/>
+
+			{/* Apply Template Modal */}
+			<ApplyTemplateModal
+				visible={isApplyTemplateModalVisible}
+				onClose={() => setIsApplyTemplateModalVisible(false)}
+				onSelectTemplate={handleApplyTemplate}
+				templates={availableTemplates}
+			/>
 		</SafeAreaView>
 	);
 };
