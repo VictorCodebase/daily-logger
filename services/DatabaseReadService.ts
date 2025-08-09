@@ -90,10 +90,10 @@ export async function responsibilitiesSummaryExists(user_id: number): Promise<nu
  * Checks for existing log templates and returns a list of their IDs and names.
  * @returns A list of template IDs and names or null if none exist.
  */
-export async function logTemplatesExist(): Promise<{ log_template_id: number; name: string }[] | null> {
+export async function logTemplatesExist(): Promise<{ log_template_id: number; name: string; color_code:string }[] | null> {
 	try {
 		const db = await setupDatabase();
-		const results = await db.getAllAsync<{ log_template_id: number; name: string }>(`SELECT log_template_id, name FROM Log_Template;`);
+		const results = await db.getAllAsync<{ log_template_id: number; name: string; color_code:string }>(`SELECT log_template_id, name, color_code FROM Log_Template;`);
 		return results.length > 0 ? results : null;
 	} catch (error) {
 		console.error("Error checking log templates existence:", error);

@@ -1,6 +1,6 @@
 import { createDay, createActivity, createSpecialActivity, createLogTemplate } from "../services/DatabaseCreateService";
 
-import { dayExists } from "../services/DatabaseReadService";
+import { dayExists, logTemplatesExist, readLogTemplate } from "../services/DatabaseReadService";
 
 import { formatDateForSQLite, formatTimeForSQLite, getFormattedDate } from "../utils/DateFormatUtil";
 
@@ -17,6 +17,17 @@ interface RawDate {
 	time_in: string;
 	time_out: string;
 }
+
+export interface TemplateContent {
+	dayData: {
+		date: string;
+		time_in: string;
+		time_out: string;
+	};
+	activities: RawActivity[];
+	specialActivities: RawActivity[];
+}
+
 
 /**
  * Saves a list of daily activities and special activities to the database.
@@ -106,4 +117,43 @@ export async function createTemplate(name: string, description: string, colorCod
 		console.error("Error in createTemplate:", error);
 		return false;
 	}
+}
+
+
+/**
+ * Retrieves a list of all existing log templates.
+ * @returns A list of templates with their ID and name, or null if none exist.
+ */
+export async function listTemplates(): Promise<{ log_template_id: number; name: string; color_code: string }[] | null> {
+    const templates = await logTemplatesExist();
+    return templates;
+}
+
+
+/**
+ * Acquires the full data for a specific template.
+ * @param templateId The ID of the template to retrieve.
+ * @returns An object containing the template's name, color, and parsed content, or null on failure.
+ */
+export async function acquireTemplate(templateId: number): Promise<{
+    name: string;
+    color: string;
+    content: TemplateContent;
+} | null> {
+    const template = await readLogTemplate(templateId);
+    if (!template) {
+        return null;
+    }
+
+    try {
+        const content: TemplateContent = JSON.parse(template.content_json || '{}');
+        return {
+            name: template.name,
+            color: template.color_code || '#8E8E93', // Default to a gray color
+            content,
+        };
+    } catch (error) {
+        console.error('Failed to parse template content JSON:', error);
+        return null;
+    }
 }
