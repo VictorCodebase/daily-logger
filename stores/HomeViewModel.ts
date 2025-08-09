@@ -2,7 +2,7 @@ import { createDay, createActivity, createSpecialActivity, createLogTemplate } f
 
 import { dayExists } from "../services/DatabaseReadService";
 
-import { formatDateForSQLite, formatTimeForSQLite, getFormattedDate } from "../utils/DateFormat";
+import { formatDateForSQLite, formatTimeForSQLite, getFormattedDate } from "../utils/DateFormatUtil";
 
 // Define the shape of your raw activity objects
 interface RawActivity {
@@ -13,9 +13,9 @@ interface RawActivity {
 }
 
 interface RawDate {
-    date: string;
-    time_in: string;
-    time_out: string;
+	date: string;
+	time_in: string;
+	time_out: string;
 }
 
 /**

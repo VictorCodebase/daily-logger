@@ -1,12 +1,12 @@
-// components/ActivityBlock.tsx
+// components/SpecialActivityBlock.tsx
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
-import { colors } from "../themes/colors";
-import { getFormattedTime } from "../utils/DateFormat"
+import { colors } from "../../themes/colors";
+import { getFormattedTime } from "../../utils/DateFormatUtil";
 
 interface RawActivity {
 	content: string;
@@ -15,14 +15,13 @@ interface RawActivity {
 	time_end: string;
 }
 
-interface ActivityBlockProps {
+interface SpecialActivityBlockProps {
 	activity: RawActivity;
 	onActivityChange: (activity: RawActivity) => void;
-	onRemove?: () => void;
-	isRequired?: boolean;
+	onRemove: () => void;
 }
 
-export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivityChange, onRemove, isRequired = false }) => {
+export const SpecialActivityBlock: React.FC<SpecialActivityBlockProps> = ({ activity, onActivityChange, onRemove }) => {
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
 	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
@@ -54,35 +53,31 @@ export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivi
 	};
 
 	return (
-		<View style={tw`bg-[${colors.background.card}] rounded-2xl p-6 mb-4 shadow-sm border border-[${colors.border.secondary}]`}>
+		<View style={tw`bg-[${colors.background.card}] rounded-2xl p-6 mb-4 shadow-sm border-2 border-[${colors.status.warning}20] border-dashed`}>
 			{/* Header */}
 			<View style={tw`flex-row items-center justify-between mb-4`}>
 				<View style={tw`flex-row items-center`}>
-					<View style={tw`w-10 h-10 bg-[${colors.surface.elevated}] rounded-xl items-center justify-center mr-3`}>
-						<Feather name="activity" size={18} color={colors.primary.main} />
+					<View style={tw`w-10 h-10 bg-[${colors.status.warning}20] rounded-xl items-center justify-center mr-3`}>
+						<Feather name="star" size={18} color={colors.status.warning} />
 					</View>
-					<Text style={tw`text-base font-semibold text-[${colors.text.primary}]`}>
-						Activity {isRequired && <Text style={tw`text-[${colors.status.error}]`}>*</Text>}
-					</Text>
+					<Text style={tw`text-base font-semibold text-[${colors.text.primary}]`}>Special Activity</Text>
 				</View>
 
-				{onRemove && (
-					<TouchableOpacity onPress={onRemove} style={tw`w-8 h-8 items-center justify-center`}>
-						<Feather name="trash-2" size={16} color={colors.text.secondary} />
-					</TouchableOpacity>
-				)}
+				<TouchableOpacity onPress={onRemove} style={tw`w-8 h-8 items-center justify-center`}>
+					<Feather name="trash-2" size={16} color={colors.text.secondary} />
+				</TouchableOpacity>
 			</View>
 
 			{/* Details Field */}
 			<View style={tw`mb-4`}>
 				<Text style={tw`text-sm font-medium text-[${colors.text.primary}] mb-2`}>
-					Details {isRequired && <Text style={tw`text-[${colors.status.error}]`}>*</Text>}
+					Details <Text style={tw`text-[${colors.status.error}]`}>*</Text>
 				</Text>
 				<TextInput
 					style={tw`bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl p-4 text-base text-[${colors.text.primary}] min-h-24`}
 					value={activity.content}
 					onChangeText={(text) => onActivityChange({ ...activity, content: text })}
-					placeholder="Enter activity details..."
+					placeholder="Enter special activity details..."
 					placeholderTextColor={colors.text.placeholder}
 					multiline
 					textAlignVertical="top"
@@ -96,7 +91,7 @@ export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivi
 					style={tw`bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl p-4 text-base text-[${colors.text.primary}]`}
 					value={activity.category}
 					onChangeText={(text) => onActivityChange({ ...activity, category: text })}
-					placeholder="e.g., Directing"
+					placeholder="e.g., Meeting"
 					placeholderTextColor={colors.text.placeholder}
 				/>
 			</View>

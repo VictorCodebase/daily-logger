@@ -108,6 +108,8 @@ async function createTables(db: SQLite.SQLiteDatabase) {
 export default async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
 	if (!dbInstance) {
 		dbInstance = await SQLite.openDatabaseAsync("daily-logger.db");
+
+        await dbInstance.execAsync("PRAGMA foreign_keys = ON;");
 		console.log("Database opened successfully.");
 		await createTables(dbInstance);
 	}

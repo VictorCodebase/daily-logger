@@ -6,25 +6,13 @@ import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../themes/colors";
-import { DaySection } from "../components/DaySection";
-import { ActivityBlock } from "../components/ActivityBlock";
-import { SpecialActivityBlock } from "../components/SpecialActivityBlock";
-import { SaveTemplateModal } from "../components/SaveTemplateModal";
-import { saveActivities, createTemplate } from "../stores/HomeViewModel"
-import {getFormattedDate, getFormattedTime} from "../utils/DateFormat"
-
-interface RawActivity {
-	content: string;
-	category: string;
-	time_start: string;
-	time_end: string;
-}
-
-interface RawDate {
-	date: string;
-	time_in: string;
-	time_out: string;
-}
+import { DaySection } from "../components/homeComponents/DaySection";
+import { ActivityBlock } from "../components/homeComponents/ActivityBlock";
+import { SpecialActivityBlock } from "../components/homeComponents/SpecialActivityBlock";
+import { SaveTemplateModal } from "../components/modals/SaveTemplateModal";
+import { saveActivities, createTemplate } from "../stores/HomeViewModel";
+import { getFormattedDate, getFormattedTime } from "../utils/DateFormatUtil";
+import { RawDate, RawActivity } from "../models/view_Models";
 
 const HomeScreen: React.FC = () => {
 	// Day section state
@@ -99,6 +87,7 @@ const HomeScreen: React.FC = () => {
 				Alert.alert("Error", "Failed to save activities. Please try again.");
 			}
 
+			setActivities([{ content: "", category: "", time_start: "", time_end: "" }]);
 			return success;
 		} catch (error) {
 			Alert.alert("Error", "An unexpected error occurred.");
@@ -109,11 +98,11 @@ const HomeScreen: React.FC = () => {
 	};
 
 	const handleSaveTemplate = async () => {
-		const saveSuccess = await handleSave();
+		// const saveSuccess = await handleSave();
 
-		if (saveSuccess) {
-			setIsTemplateModalVisible(true);
-		}
+		// if (saveSuccess) {
+		setIsTemplateModalVisible(true);
+		// }
 	};
 
 	const handleTemplateSubmit = async (name: string, description: string, colorCode: string) => {
@@ -139,106 +128,92 @@ const HomeScreen: React.FC = () => {
 
 	return (
 		<SafeAreaView style={tw`flex-1 bg-[${colors.background.primary}]`}>
-
-
-			<ScrollView style={tw`flex-1`} contentContainerStyle={tw``} showsVerticalScrollIndicator={false}>
-				{/* Welcome Card */}
-				<View style={tw`mx-4 p-6 `}>
-					<View style={tw`flex-row items-center mb-4`}>
-						
-						<View>
-							<Text style={tw`text-lg font-semibold text-[${colors.text.primary}]`}>Mbwaa Media Activity Logger</Text>
-							<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcome back User Name</Text>
-						</View>
-					</View>
-
-						<Text style={tw`text-3xl font-bold text-[${colors.text.primary}]`}>Thursday</Text>
-						<Text style={tw`text-sm text-[${colors.text.secondary}]`}>09.11.2023</Text>
+			<ScrollView style={tw`flex-1`} contentContainerStyle={tw`pb-28`} showsVerticalScrollIndicator={false}>
+				{/* Header */}
+				<View style={tw`p-6`}>
+					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcome back, User Name</Text>
+					<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>Friday</Text>
+					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>08.08.2025</Text>
 				</View>
 
 				{/* Day Section */}
-				<DaySection dayData={dayData} onDayDataChange={setDayData} />
+				<View style={tw`px-4`}>
+					<DaySection dayData={dayData} onDayDataChange={setDayData} />
+				</View>
 
-				{/* Activities Section */}
-				<View style={tw`mx-6 mt-6`}>
-					<Text style={tw`text-xl font-semibold text-[${colors.text.primary}] mb-4`}>Activities</Text>
-
+				{/* Activities */}
+				<View style={tw`mt-8 px-4`}>
+					<Text style={tw`text-lg font-semibold text-[${colors.text.primary}] mb-3`}>Activities</Text>
 					{activities.map((activity, index) => (
 						<ActivityBlock
 							key={`activity-${index}`}
 							activity={activity}
-							onActivityChange={(updatedActivity) => updateActivity(index, updatedActivity)}
+							onActivityChange={(updated) => updateActivity(index, updated)}
 							onRemove={activities.length > 1 ? () => removeActivity(index) : undefined}
 							isRequired={index === 0}
 						/>
 					))}
-
-					{/* Add Activity Button */}
 					<TouchableOpacity
-						style={tw`flex-row items-center justify-center py-4 px-6 bg-[${colors.surface.elevated}] border-2 border-dashed border-[${colors.primary.main}] rounded-xl mt-4`}
+						style={tw`flex-row items-center justify-center py-3 bg-[${colors.surface.elevated}] border border-dashed border-[${colors.primary.main}] rounded-xl mt-3`}
 						onPress={addActivity}
 					>
-						<Feather name="plus" size={20} color={colors.primary.main} />
+						<Feather name="plus" size={18} color={colors.primary.main} />
 						<Text style={tw`ml-2 text-[${colors.primary.main}] font-medium`}>Add Activity</Text>
-					</TouchableOpacity>
-
-					{/* Special Activities */}
-					{specialActivities.length > 0 && (
-						<View style={tw`mt-8`}>
-							<Text style={tw`text-xl font-semibold text-[${colors.text.primary}] mb-4`}>Special Activities</Text>
-
-							{specialActivities.map((activity, index) => (
-								<SpecialActivityBlock
-									key={`special-${index}`}
-									activity={activity}
-									onActivityChange={(updatedActivity) => updateSpecialActivity(index, updatedActivity)}
-									onRemove={() => removeSpecialActivity(index)}
-								/>
-							))}
-						</View>
-					)}
-
-					{/* Add Special Activity Button */}
-					<TouchableOpacity
-						style={tw`flex-row items-center justify-center py-4 px-6 bg-[${colors.background.tertiary}] border-2 border-dashed border-[${colors.text.tertiary}] rounded-xl mt-4`}
-						onPress={addSpecialActivity}
-					>
-						<Feather name="star" size={20} color={colors.text.secondary} />
-						<Text style={tw`ml-2 text-[${colors.text.secondary}] font-medium`}>Add Special Activity</Text>
 					</TouchableOpacity>
 				</View>
 
+				{/* Special Activities */}
+				{specialActivities.length > 0 && (
+					<View style={tw`mt-8 px-4`}>
+						<Text style={tw`text-lg font-semibold text-[${colors.text.primary}] mb-3`}>Special Activities</Text>
+						{specialActivities.map((activity, index) => (
+							<SpecialActivityBlock
+								key={`special-${index}`}
+								activity={activity}
+								onActivityChange={(updated) => updateSpecialActivity(index, updated)}
+								onRemove={() => removeSpecialActivity(index)}
+							/>
+						))}
+					</View>
+				)}
+				<TouchableOpacity
+					style={tw`flex-row items-center justify-center py-3 bg-[${colors.background.tertiary}] border border-dashed border-[${colors.text.tertiary}] rounded-xl mt-3 mx-4`}
+					onPress={addSpecialActivity}
+				>
+					<Feather name="star" size={18} color={colors.text.secondary} />
+					<Text style={tw`ml-2 text-[${colors.text.secondary}] font-medium`}>Add Special Activity</Text>
+				</TouchableOpacity>
+
 				{/* Preview Button */}
-				<View style={tw`mx-6 mt-8`}>
+				<View style={tw`mt-8 px-4`}>
 					<TouchableOpacity
-						style={tw`flex-row items-center justify-center py-4 px-6 bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl`}
+						style={tw`flex-row items-center justify-center py-3 bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl`}
 					>
-						<Feather name="eye" size={20} color={colors.text.secondary} />
+						<Feather name="eye" size={18} color={colors.text.secondary} />
 						<Text style={tw`ml-2 text-[${colors.text.secondary}] font-medium`}>Preview</Text>
 					</TouchableOpacity>
 				</View>
 			</ScrollView>
 
-			{/* Bottom Buttons */}
+			{/* Bottom Actions */}
 			<View
-				style={tw`absolute bottom-0 left-0 right-0 bg-[${colors.background.primary}] border-t border-[${colors.border.secondary}] px-6 py-4`}
+				style={tw`absolute bottom-0 left-0 right-0 bg-[${colors.background.primary}] border-t border-[${colors.border.secondary}] px-4 py-4`}
 			>
 				<View style={tw`flex-row gap-4`}>
 					<TouchableOpacity
-						style={tw`flex-1 py-4 px-6 bg-[${colors.primary.main}] rounded-xl flex-row items-center justify-center`}
+						style={tw`flex-1 py-4 bg-[${colors.primary.main}] rounded-xl flex-row items-center justify-center`}
 						onPress={handleSave}
 						disabled={isSaving}
 					>
-						<Feather name="save" size={20} color={colors.text.inverse} />
+						<Feather name="save" size={18} color={colors.text.inverse} />
 						<Text style={tw`ml-2 text-[${colors.text.inverse}] font-semibold`}>{isSaving ? "Saving..." : "Save"}</Text>
 					</TouchableOpacity>
-
 					<TouchableOpacity
-						style={tw`flex-1 py-4 px-6 bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl flex-row items-center justify-center`}
+						style={tw`flex-1 py-4 bg-transparent border border-[${colors.border.primary}] rounded-xl flex-row items-center justify-center`}
 						onPress={handleSaveTemplate}
 						disabled={isSaving}
 					>
-						<Feather name="bookmark" size={20} color={colors.text.primary} />
+						<Feather name="bookmark" size={18} color={colors.text.primary} />
 						<Text style={tw`ml-2 text-[${colors.text.primary}] font-semibold`}>Save Template</Text>
 					</TouchableOpacity>
 				</View>

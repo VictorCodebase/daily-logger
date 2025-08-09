@@ -14,7 +14,7 @@ export const colors = {
 		secondary: "#F8F9FA",
 		tertiary: "#F1F3F4",
 		card: "#FFFFFF",
-		modal: "rgba(0, 0, 0, 0.5)",
+		modal: "rgba(255, 255, 255, 1)",
 	},
 
 	text: {

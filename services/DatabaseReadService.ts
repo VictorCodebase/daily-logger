@@ -1,5 +1,5 @@
 import setupDatabase from "./DatabaseService";
-import { User, Day, Activity, SpecialActivity, ResponsibilitiesSummary, LogTemplate, ExportTemplate } from "../models/models";
+import { User, Day, Activity, SpecialActivity, ResponsibilitiesSummary, LogTemplate, ExportTemplate } from "../models/viewModel_Models";
 
 // --- EXISTENCE CHECK FUNCTIONS (return IDs or null) ---
 

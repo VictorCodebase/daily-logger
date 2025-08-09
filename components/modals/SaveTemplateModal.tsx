@@ -4,7 +4,8 @@ import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Alert } fro
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
-import { colors } from "../themes/colors";
+import { colors } from "../../themes/colors";
+import COLOR_OPTIONS from "../../utils/colorOptionsUtil";
 
 interface SaveTemplateModalProps {
 	visible: boolean;
@@ -12,16 +13,6 @@ interface SaveTemplateModalProps {
 	onSubmit: (name: string, description: string, colorCode: string) => void;
 }
 
-const COLOR_OPTIONS = [
-	{ label: "Green", value: colors.primary.main, color: colors.primary.main },
-	{ label: "Blue", value: "#007AFF", color: "#007AFF" },
-	{ label: "Orange", value: "#FF9500", color: "#FF9500" },
-	{ label: "Red", value: "#FF3B30", color: "#FF3B30" },
-	{ label: "Purple", value: "#AF52DE", color: "#AF52DE" },
-	{ label: "Pink", value: "#FF2D92", color: "#FF2D92" },
-	{ label: "Teal", value: "#5AC8FA", color: "#5AC8FA" },
-	{ label: "Gray", value: "#8E8E93", color: "#8E8E93" },
-];
 
 export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({ visible, onClose, onSubmit }) => {
 	const [name, setName] = useState("");
@@ -58,7 +49,7 @@ export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({ visible, o
 	return (
 		<Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
 			<View style={tw`flex-1 justify-end bg-black bg-opacity-50`}>
-				<View style={tw`bg-[${colors.background.modal}] rounded-t-3xl max-h-4/5`}>
+				<View style={tw`bg-white rounded-t-3xl max-h-4/5`}>
 					{/* Header */}
 					<View style={tw`flex-row items-center justify-between p-6 border-b border-[${colors.border.secondary}]`}>
 						<Text style={tw`text-xl font-semibold text-[${colors.text.primary}]`}>Save Template</Text>
@@ -67,7 +58,7 @@ export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({ visible, o
 						</TouchableOpacity>
 					</View>
 
-					<ScrollView style={tw`flex-1`} showsVerticalScrollIndicator={false}>
+					<ScrollView style={tw``} showsVerticalScrollIndicator={false}>
 						<View style={tw`p-6`}>
 							{/* Template Name */}
 							<View style={tw`mb-6`}>

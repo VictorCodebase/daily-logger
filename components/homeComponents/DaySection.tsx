@@ -5,8 +5,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
-import { colors } from "../themes/colors";
-import { getFormattedTime } from "../utils/DateFormat";
+import { colors } from "../../themes/colors";
+import { getFormattedTime } from "../../utils/DateFormatUtil";
 
 interface RawDate {
 	date: string;
@@ -76,7 +76,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 
 			<View style={tw`bg-[${colors.background.card}] rounded-2xl p-6 shadow-sm border border-[${colors.border.secondary}]`}>
 				{/* Time In */}
-				<View style={tw`flex-row items-center justify-between mb-4`}>
+				<View style={tw`flex-row items-center justify-between mb-2`}>
 					<View style={tw`flex-row items-center flex-1`}>
 						<View style={tw`w-10 h-10 bg-[${colors.surface.elevated}] rounded-xl items-center justify-center mr-3`}>
 							<Feather name="clock" size={18} color={colors.primary.main} />
@@ -95,7 +95,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 				</View>
 
 				{/* Hours Worked */}
-				<View style={tw`flex-row items-center justify-between mb-4`}>
+				<View style={tw`flex-row items-center justify-between mb-2`}>
 					<View style={tw`flex-row items-center flex-1`}>
 						<View style={tw`w-10 h-10 bg-[${colors.background.tertiary}] rounded-xl items-center justify-center mr-3`}>
 							<Feather name="activity" size={18} color={colors.text.secondary} />
