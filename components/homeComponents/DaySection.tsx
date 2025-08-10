@@ -1,5 +1,5 @@
 // components/DaySection.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import tw from "twrnc";
@@ -22,15 +22,81 @@ interface DaySectionProps {
 export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange }) => {
 	const [showTimeInPicker, setShowTimeInPicker] = useState(false);
 	const [showTimeOutPicker, setShowTimeOutPicker] = useState(false);
-	const [hoursWorked, setHoursWorked] = useState("");
+	const [hoursWorked, setHoursWorked] = useState("8");
+	const [isInitialized, setIsInitialized] = useState(false);
+
+	// Initialize default values on component mount
+	useEffect(() => {
+		if (!isInitialized) {
+			const now = new Date();
+			const currentTimeString = getFormattedTime(now);
+
+			// Calculate time out (current time + 8 hours)
+			const timeOutDate = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+			const timeOutString = getFormattedTime(timeOutDate);
+
+			// Only set defaults if dayData doesn't have values already
+			const updatedDayData = {
+				...dayData,
+				time_in: dayData.time_in || currentTimeString,
+				time_out: dayData.time_out || timeOutString,
+			};
+
+			onDayDataChange(updatedDayData);
+			setIsInitialized(true);
+		}
+	}, [dayData, onDayDataChange, isInitialized]);
+
+	// Calculate hours worked when time_in or time_out changes
+	useEffect(() => {
+		if (dayData.time_in && dayData.time_out && isInitialized) {
+			const calculatedHours = calculateHoursDifference(dayData.time_in, dayData.time_out);
+			setHoursWorked(calculatedHours.toString());
+		}
+	}, [dayData.time_in, dayData.time_out, isInitialized]);
+
+	const calculateHoursDifference = (timeIn: string, timeOut: string): number => {
+		const [inHours, inMinutes, inSeconds] = timeIn.split(":").map(Number);
+		const [outHours, outMinutes, outSeconds] = timeOut.split(":").map(Number);
+
+		const timeInDate = new Date();
+		timeInDate.setHours(inHours, inMinutes, inSeconds || 0);
+
+		const timeOutDate = new Date();
+		timeOutDate.setHours(outHours, outMinutes, outSeconds || 0);
+
+		// Handle case where time_out is next day
+		if (timeOutDate < timeInDate) {
+			timeOutDate.setDate(timeOutDate.getDate() + 1);
+		}
+
+		const diffInMs = timeOutDate.getTime() - timeInDate.getTime();
+		const diffInHours = diffInMs / (1000 * 60 * 60);
+
+		return Math.round(diffInHours * 10) / 10; // Round to 1 decimal place
+	};
+
+	const parseTimeToDate = (timeString: string): Date => {
+		const [hours, minutes, seconds] = timeString.split(":").map(Number);
+		const date = new Date();
+		date.setHours(hours, minutes, seconds || 0, 0);
+		return date;
+	};
 
 	const handleTimeInChange = (event: any, selectedTime?: Date) => {
 		setShowTimeInPicker(false);
 		if (selectedTime) {
 			const timeString = getFormattedTime(selectedTime);
+
+			// Calculate new time_out based on current hours worked
+			const hoursToAdd = parseFloat(hoursWorked) || 8;
+			const timeOutDate = new Date(selectedTime.getTime() + hoursToAdd * 60 * 60 * 1000);
+			const timeOutString = getFormattedTime(timeOutDate);
+
 			onDayDataChange({
 				...dayData,
 				time_in: timeString,
+				time_out: timeOutString,
 			});
 		}
 	};
@@ -43,6 +109,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 				...dayData,
 				time_out: timeString,
 			});
+			// Hours will be automatically calculated by useEffect
 		}
 	};
 
@@ -51,9 +118,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 
 		if (dayData.time_in && hours && !isNaN(Number(hours))) {
 			// Parse the time_in
-			const [inHours, inMinutes, inSeconds] = dayData.time_in.split(":").map(Number);
-			const timeInDate = new Date();
-			timeInDate.setHours(inHours, inMinutes, inSeconds);
+			const timeInDate = parseTimeToDate(dayData.time_in);
 
 			// Add the worked hours
 			const timeOutDate = new Date(timeInDate.getTime() + Number(hours) * 60 * 60 * 1000);
@@ -70,8 +135,23 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 		return timeString.substring(0, 5); // Show only HH:MM
 	};
 
+	// Get current values for DateTimePicker
+	const getTimeInPickerValue = (): Date => {
+		if (dayData.time_in) {
+			return parseTimeToDate(dayData.time_in);
+		}
+		return new Date();
+	};
+
+	const getTimeOutPickerValue = (): Date => {
+		if (dayData.time_out) {
+			return parseTimeToDate(dayData.time_out);
+		}
+		return new Date();
+	};
+
 	return (
-		<View style={tw`mx-6 mt-6`}>
+		<View style={tw`mx-4 mt-6`}>
 			<Text style={tw`text-xl font-semibold text-[${colors.text.primary}] mb-4`}>Day</Text>
 
 			<View style={tw`bg-[${colors.background.card}] rounded-2xl p-6 shadow-sm border border-[${colors.border.secondary}]`}>
@@ -89,7 +169,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 						onPress={() => setShowTimeInPicker(true)}
 					>
 						<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>
-							{formatDisplayTime(dayData.time_in) || "06:14"}
+							{formatDisplayTime(dayData.time_in)}
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -127,7 +207,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 						onPress={() => setShowTimeOutPicker(true)}
 					>
 						<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>
-							{formatDisplayTime(dayData.time_out) || "18:14"}
+							{formatDisplayTime(dayData.time_out)}
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -146,7 +226,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 							</View>
 
 							<DateTimePicker
-								value={new Date()}
+								value={getTimeInPickerValue()}
 								mode="time"
 								is24Hour={true}
 								display="spinner"
@@ -171,7 +251,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 							</View>
 
 							<DateTimePicker
-								value={new Date()}
+								value={getTimeOutPickerValue()}
 								mode="time"
 								is24Hour={true}
 								display="spinner"

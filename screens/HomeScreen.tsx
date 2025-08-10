@@ -229,7 +229,7 @@ const HomeScreen: React.FC = () => {
 				)}
 
 				{/* Day Section */}
-				<View style={tw`px-4`}>
+				<View >
 					<DaySection dayData={dayData} onDayDataChange={setDayData} />
 				</View>
 
