@@ -12,7 +12,7 @@ import { SaveTemplateModal } from "../components/modals/SaveTemplateModal";
 import ApplyTemplateModal from "../components/modals/ApplyTemplateModal";
 import { saveActivities, createTemplate, listTemplates, acquireTemplate, TemplateContent } from "../stores/HomeViewModel";
 import { getFormattedDate } from "../utils/DateFormatUtil";
-import { RawDate, RawActivity } from "../models/view_Models";
+import { RawDate, RawActivity } from "../models/View_Models";
 
 // A small interface for the template "glimpse" returned by the DB
 interface TemplateGlimpse {
@@ -22,6 +22,16 @@ interface TemplateGlimpse {
 }
 
 const HomeScreen: React.FC = () => {
+	// today details:
+	  const today = new Date();
+
+		const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
+		const dateStr = today.toLocaleDateString("en-GB", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+		});
+
 	// Day section state
 	const [dayData, setDayData] = useState<RawDate>({
 		date: getFormattedDate(),
@@ -128,7 +138,7 @@ const HomeScreen: React.FC = () => {
 		if (!validateForm()) return false;
 		setIsSaving(true);
 		try {
-			const success = await saveActivities(dayData.date, activities, specialActivities);
+			const success = await saveActivities(dayData, activities, specialActivities);
 			if (success) {
 				Alert.alert("Success", "Activities saved successfully!");
 				handleUnapplyTemplate(); // Reset the form after saving
@@ -182,15 +192,15 @@ const HomeScreen: React.FC = () => {
 			)}
 			<ScrollView style={tw`flex-1`} contentContainerStyle={tw`pb-28`} showsVerticalScrollIndicator={false}>
 				{/* Header */}
-				<View style={tw`p-6`}>
+				<View style={tw`p-6 `}>
 					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcome back, User Name</Text>
-					<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>Friday</Text>
-					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>08.08.2025</Text>
+					<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>{dayName}</Text>
+					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>{dateStr}</Text>
 				</View>
 
 				{/* Apply Template Button */}
 				{availableTemplates.length > 0 && !appliedTemplate && (
-					<View style={tw`px-4`}>
+					<View style={tw`px-4 mt-5`}>
 						<TouchableOpacity
 							style={tw`flex-row items-center justify-center py-3 bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl`}
 							onPress={() => setIsApplyTemplateModalVisible(true)}
@@ -204,10 +214,10 @@ const HomeScreen: React.FC = () => {
 				{/* Applied Template Message */}
 				{appliedTemplate && (
 					<View
-						style={tw`mx-4 mt-4 flex-row items-center justify-between p-3 bg-[${colors.surface.elevated}] rounded-xl border border-[${colors.border.primary}]`}
+						style={tw`mx-4 mt-3 flex-row items-center justify-between p-3 bg-[${colors.surface.elevated}] rounded-xl border border-[${colors.border.primary}]`}
 					>
 						<View style={tw`flex-row items-center`}>
-							<View style={tw`w-3 h-3 rounded-full mr-2`} style={{ backgroundColor: appliedTemplate.color }} />
+							<View style={[tw`w-3 h-3 rounded-full mr-2`, { backgroundColor: appliedTemplate.color }]} />
 							<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>
 								Applied '{appliedTemplate.name}' template
 							</Text>
@@ -219,7 +229,7 @@ const HomeScreen: React.FC = () => {
 				)}
 
 				{/* Day Section */}
-				<View style={tw`px-4 mt-4`}>
+				<View style={tw`px-4`}>
 					<DaySection dayData={dayData} onDayDataChange={setDayData} />
 				</View>
 

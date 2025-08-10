@@ -5,7 +5,7 @@ import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../../themes/colors";
-import COLOR_OPTIONS from "../../utils/colorOptionsUtil";
+import COLOR_OPTIONS from "../../utils/ColorOptionsUtil";
 
 interface SaveTemplateModalProps {
 	visible: boolean;
