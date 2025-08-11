@@ -5,6 +5,7 @@ import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../themes/colors";
+import { useUser } from "../context/UserContext";
 import { DaySection } from "../components/homeComponents/DaySection";
 import { ActivityBlock } from "../components/homeComponents/ActivityBlock";
 import { SpecialActivityBlock } from "../components/homeComponents/SpecialActivityBlock";
@@ -22,15 +23,17 @@ interface TemplateGlimpse {
 }
 
 const HomeScreen: React.FC = () => {
-	// today details:
-	  const today = new Date();
+	const { user, isLoggedIn } = useUser();
 
-		const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
-		const dateStr = today.toLocaleDateString("en-GB", {
-			day: "2-digit",
-			month: "2-digit",
-			year: "numeric",
-		});
+	// today details:
+	const today = new Date();
+
+	const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
+	const dateStr = today.toLocaleDateString("en-GB", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 
 	// Day section state
 	const [dayData, setDayData] = useState<RawDate>({
@@ -193,7 +196,7 @@ const HomeScreen: React.FC = () => {
 			<ScrollView style={tw`flex-1`} contentContainerStyle={tw`pb-28`} showsVerticalScrollIndicator={false}>
 				{/* Header */}
 				<View style={tw`p-6 `}>
-					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcome back, User Name</Text>
+					{isLoggedIn && user && <Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcome back, {user.name}</Text>}
 					<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>{dayName}</Text>
 					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>{dateStr}</Text>
 				</View>
@@ -229,7 +232,7 @@ const HomeScreen: React.FC = () => {
 				)}
 
 				{/* Day Section */}
-				<View >
+				<View>
 					<DaySection dayData={dayData} onDayDataChange={setDayData} />
 				</View>
 
