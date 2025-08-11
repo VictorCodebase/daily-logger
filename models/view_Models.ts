@@ -10,3 +10,10 @@ export interface RawDate {
     time_in: string;
     time_out: string;
 }
+
+export interface WorkSchedulePeriod {
+	start: string;
+	end: string;
+	expected_time_in: string;
+	expected_time_out: string;
+}

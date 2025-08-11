@@ -1,103 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Pressable, Platform, KeyboardAvoidingView } from "react-native";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import tw from "twrnc";
-import { Picker } from "@react-native-picker/picker";
 import { signUpUser, loginUser } from "../stores/OnboardViewModel";
+import WorkSchedulePeriodInput from "../components/OnboardComponents/WorkSchedulePeriodInput";
+import { WorkSchedulePeriod } from "../models/View_Models";
 import { useUser } from "../context/UserContext";
 import { colors } from "../themes/colors";
 
 
 
-// Define the shape of the work schedule periods
-interface WorkSchedulePeriod {
-	start: string;
-	end: string;
-	expected_time_in: string;
-	expected_time_out: string;
-}
 
 // Helper component for work schedule period input
-const WorkSchedulePeriodInput = ({
-	period,
-	index,
-	onPeriodChange,
-	onRemove,
-}: {
-	period: WorkSchedulePeriod;
-	index: number;
-	onPeriodChange: (updatedPeriod: WorkSchedulePeriod) => void;
-	onRemove: () => void;
-}) => {
-	const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "public_holiday"];
-
-	return (
-		<View style={tw`bg-[${colors.surface.elevated}] p-4 rounded-xl mb-4 border border-[${colors.border.primary}]`}>
-			<View style={tw`flex-row items-center justify-between mb-2`}>
-				<Text style={tw`text-[${colors.text.primary}] font-semibold`}>Period {index + 1}</Text>
-				<TouchableOpacity onPress={onRemove}>
-					<Feather name="trash" size={18} color={colors.text.secondary} />
-				</TouchableOpacity>
-			</View>
-			<View style={tw`flex-row justify-between mb-3`}>
-				<View style={tw`w-1/2 pr-2`}>
-					<Text style={tw`text-sm text-[${colors.text.secondary}] mb-1`}>Start Day</Text>
-					<View style={tw`bg-[${colors.background.secondary}] rounded-md `}>
-						<Picker
-							selectedValue={period.start}
-							onValueChange={(itemValue) => onPeriodChange({ ...period, start: itemValue })}
-							style={tw`text-[${colors.text.primary}] h-15`}
-							dropdownIconColor={colors.text.primary}
-							mode="dropdown"
-						>
-							{days.map((day) => (
-								<Picker.Item key={day} label={day} value={day} />
-							))}
-						</Picker>
-					</View>
-				</View>
-				<View style={tw`w-1/2 pl-2`}>
-					<Text style={tw`text-sm text-[${colors.text.secondary}] mb-1`}>End Day</Text>
-					<View style={tw`bg-[${colors.background.secondary}] rounded-md`}>
-						<Picker
-							selectedValue={period.end}
-							onValueChange={(itemValue) => onPeriodChange({ ...period, end: itemValue })}
-							style={tw`text-[${colors.text.primary}] h-15`}
-							dropdownIconColor={colors.text.primary}
-							mode="dropdown"
-						>
-							{days.map((day) => (
-								<Picker.Item key={day} label={day} value={day} />
-							))}
-						</Picker>
-					</View>
-				</View>
-			</View>
-			<View style={tw`flex-row justify-between`}>
-				<View style={tw`w-1/2 pr-2`}>
-					<Text style={tw`text-sm text-[${colors.text.secondary}] mb-1`}>Time In</Text>
-					<TextInput
-						style={tw`bg-[${colors.background.secondary}] text-[${colors.text.primary}] rounded-md h-10 px-3`}
-						value={period.expected_time_in}
-						onChangeText={(text) => onPeriodChange({ ...period, expected_time_in: text })}
-						placeholder="HH:MM"
-						placeholderTextColor={colors.text.secondary}
-					/>
-				</View>
-				<View style={tw`w-1/2 pl-2`}>
-					<Text style={tw`text-sm text-[${colors.text.secondary}] mb-1`}>Time Out</Text>
-					<TextInput
-						style={tw`bg-[${colors.background.secondary}] text-[${colors.text.primary}] rounded-md h-10 px-3`}
-						value={period.expected_time_out}
-						onChangeText={(text) => onPeriodChange({ ...period, expected_time_out: text })}
-						placeholder="HH:MM"
-						placeholderTextColor={colors.text.secondary}
-					/>
-				</View>
-			</View>
-		</View>
-	);
-};
 
 export default function LoginSignupScreen() {
 	const [isLogin, setIsLogin] = useState(true);
@@ -124,6 +38,7 @@ export default function LoginSignupScreen() {
 		},
 	]);
 	const [profilePhotoPath, setProfilePhotoPath] = useState("");
+	const userContext = useUser();
 
 	// Helper to add roles from a comma-separated string
 	const handleAddRole = (text: string) => {
@@ -141,7 +56,7 @@ export default function LoginSignupScreen() {
 	const handleLogin = async () => {
 		setIsLoading(true);
 		setErrorMessage("");
-		const response = await loginUser(loginEmail, loginPassword);
+		const response = await loginUser(loginEmail, loginPassword, userContext);
 		if (response.status === "error") {
 			setErrorMessage(response.message);
 		}
@@ -165,7 +80,7 @@ export default function LoginSignupScreen() {
 		}
 
 		const workScheduleObject = { periods: workSchedule };
-		const response = await signUpUser(signupName, signupEmail, signupPassword, roles, workScheduleObject, profilePhotoPath);
+		const response = await signUpUser(signupName, signupEmail, signupPassword, roles, workScheduleObject, profilePhotoPath, userContext);
 		if (response.status === "error") {
 			setErrorMessage(response.message);
 		}

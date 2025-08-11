@@ -37,7 +37,8 @@ export async function signUpUser(
 	password: string,
 	roles: string[],
 	workSchedule: WorkSchedule,
-	path_to_icon: string = ""
+	path_to_icon: string = "",
+	user_context: any
 ): Promise<Response> {
 	try {
 		// --- 1. Basic field validation ---
@@ -75,14 +76,14 @@ export async function signUpUser(
 		// --- 5. Update the application-wide UserContext ---
 		// This is where we break SRP for practicality, but we keep the logic here
 		// to centralize the sign-up flow.
-		const userContext = useUser();
+		// const userContext = useUser();
 		const newUser: User = {
 			id: newUserId.toString(),
 			name,
 			email,
 			// You can add more user data from the DB if needed
 		};
-		userContext.login(newUser);
+		user_context.login(newUser);
 
 		return {
 			status: "success",
@@ -103,7 +104,7 @@ export async function signUpUser(
  * @param password The user's plain-text password.
  * @returns A promise that resolves to a Response object with status and message.
  */
-export async function loginUser(email: string, password: string): Promise<Response> {
+export async function loginUser(email: string, password: string, user_context: any): Promise<Response> {
 	try {
 		// --- 1. Basic field validation ---
 		if (!email || !password) {
@@ -144,13 +145,13 @@ export async function loginUser(email: string, password: string): Promise<Respon
 		}
 
 		// --- 4. Update the UserContext for a successful login ---
-		const userContext = useUser();
+		// const userContext = useUser();
 		const loggedInUser: User = {
 			id: user.user_id.toString(),
 			name: user.name,
 			email: user.email,
 		};
-		userContext.login(loggedInUser);
+		user_context.login(loggedInUser);
 
 		return {
 			status: "success",
