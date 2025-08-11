@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { Text } from "react-native";
+import { Text, View, ActivityIndicator } from "react-native";
+// import AsyncStorage from "@react-native-async-storage/async-storage"; // You will need to install this library
 
 // Define the shape of the user data
 export interface User {
@@ -26,30 +27,50 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
-	// Placeholder for checking for a user session on app load
 	useEffect(() => {
 		const checkLoginStatus = async () => {
-			// In a real app, you would check for a stored token or user data here
-			// For now, we'll just simulate a loading state
-			setIsLoading(false);
+			try {
+				// In a real app, you would check for a stored token or user data here.
+				// For this example, we'll simulate a 1-second check.
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+
+				// Placeholder: check for a stored session
+				// const storedUser = await AsyncStorage.getItem("user");
+				// if (storedUser) {
+				//     const userData = JSON.parse(storedUser);
+				//     setUser(userData);
+				//     setIsLoggedIn(true);
+				// }
+			} catch (error) {
+				console.error("Failed to restore session:", error);
+			} finally {
+				setIsLoading(false);
+			}
 		};
 		checkLoginStatus();
 	}, []);
 
-	const login = (userData: User) => {
+	const login = async (userData: User) => {
 		setUser(userData);
 		setIsLoggedIn(true);
-		// Here you would also save the user data to local storage or a secure store
+		// Placeholder: save the user data to a secure store
+		// await AsyncStorage.setItem("user", JSON.stringify(userData));
 	};
 
-	const logout = () => {
+	const logout = async () => {
 		setUser(null);
 		setIsLoggedIn(false);
-		// Here you would also remove the user data from local storage
+		// Placeholder: remove the user data from a secure store
+		// await AsyncStorage.removeItem("user");
 	};
 
 	if (isLoading) {
-		return <Text>Loading...</Text>;
+		return (
+			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+				<ActivityIndicator size="large" />
+				<Text style={{ marginTop: 10 }}>Loading...</Text>
+			</View>
+		);
 	}
 
 	return <UserContext.Provider value={{ user, isLoggedIn, login, logout }}>{children}</UserContext.Provider>;
