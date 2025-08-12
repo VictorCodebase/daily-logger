@@ -483,7 +483,19 @@ export default function CalendarPage() {
 
 						{/* Day Section */}
 						<View style={tw`p-4`}>
-							<DaySection dayData={modalDayData} onDayDataChange={setModalDayData} />
+							<DaySection
+								dayData={{
+									date: modalDayData.date,
+									time_in: modalDayData.time_in ?? "",
+									time_out: modalDayData.time_out ?? "",
+								}}
+								onDayDataChange={(updatedRaw) =>
+									setModalDayData({
+										...modalDayData,
+										...updatedRaw, // overwrite date/time values
+									})
+								}
+							/>
 						</View>
 
 						{/* Activities */}
@@ -534,8 +546,8 @@ export default function CalendarPage() {
 										}}
 										onActivityChange={(updatedRaw) =>
 											updateSpecialActivity(index, {
-												...activity, 
-												...updatedRaw, 
+												...activity,
+												...updatedRaw,
 											})
 										}
 										onRemove={() => removeSpecialActivity(index)}

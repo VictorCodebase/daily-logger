@@ -7,7 +7,6 @@ import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../../themes/colors";
 import { getFormattedTime } from "../../utils/DateFormatUtil";
-import { Day } from "../../models/ViewModel_Models";
 
 interface RawDate {
 	date: string;
@@ -16,8 +15,8 @@ interface RawDate {
 }
 
 interface DaySectionProps {
-	dayData: Day;
-	onDayDataChange: (dayData: Day) => void;
+	dayData: RawDate;
+	onDayDataChange: (dayData: RawDate) => void;
 }
 
 export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange }) => {
