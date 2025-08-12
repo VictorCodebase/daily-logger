@@ -54,8 +54,8 @@ export async function createUser(
  */
 export async function createDay(
     date: string,
-    time_in: string,
-    time_out: string
+    time_in: string | null,
+    time_out: string | null
 ): Promise<number | null> {
     try {
         const db = await setupDatabase();
