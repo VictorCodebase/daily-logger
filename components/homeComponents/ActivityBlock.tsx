@@ -7,17 +7,12 @@ import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../../themes/colors";
 import { getFormattedTime } from "../../utils/DateFormatUtil";
-
-interface RawActivity {
-	content: string;
-	category: string;
-	time_start: string;
-	time_end: string;
-}
+import { Activity } from "../../models/ViewModel_Models";
+import { RawActivity } from "../../models/View_Models";
 
 interface ActivityBlockProps {
-	activity: RawActivity;
-	onActivityChange: (activity: RawActivity) => void;
+	activity: RawActivity ;
+	onActivityChange: (activity: RawActivity ) => void;
 	onRemove?: () => void;
 	isRequired?: boolean;
 }
@@ -94,7 +89,7 @@ export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivi
 				<Text style={tw`text-sm font-medium text-[${colors.text.primary}] mb-2`}>Category</Text>
 				<TextInput
 					style={tw`bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl p-4 text-base text-[${colors.text.primary}]`}
-					value={activity.category}
+					value={activity.category ?? undefined}
 					onChangeText={(text) => onActivityChange({ ...activity, category: text })}
 					placeholder="e.g., Directing"
 					placeholderTextColor={colors.text.placeholder}
@@ -111,7 +106,7 @@ export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivi
 						onPress={() => setShowStartTimePicker(true)}
 					>
 						<Text style={tw`text-base text-[${activity.time_start ? colors.text.primary : colors.text.placeholder}]`}>
-							{formatDisplayTime(activity.time_start) || "Select time"}
+							{activity.time_start ? formatDisplayTime(activity.time_start) : "Select time"}
 						</Text>
 						<Feather name="clock" size={16} color={colors.text.secondary} />
 					</TouchableOpacity>
@@ -125,7 +120,7 @@ export const ActivityBlock: React.FC<ActivityBlockProps> = ({ activity, onActivi
 						onPress={() => setShowEndTimePicker(true)}
 					>
 						<Text style={tw`text-base text-[${activity.time_end ? colors.text.primary : colors.text.placeholder}]`}>
-							{formatDisplayTime(activity.time_end) || "Select time"}
+							{activity.time_end ? formatDisplayTime(activity.time_end) : "Select time"}
 						</Text>
 						<Feather name="clock" size={16} color={colors.text.secondary} />
 					</TouchableOpacity>

@@ -7,6 +7,7 @@ import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../../themes/colors";
 import { getFormattedTime } from "../../utils/DateFormatUtil";
+import { Day } from "../../models/ViewModel_Models";
 
 interface RawDate {
 	date: string;
@@ -15,8 +16,8 @@ interface RawDate {
 }
 
 interface DaySectionProps {
-	dayData: RawDate;
-	onDayDataChange: (dayData: RawDate) => void;
+	dayData: Day;
+	onDayDataChange: (dayData: Day) => void;
 }
 
 export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange }) => {
@@ -169,7 +170,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 						onPress={() => setShowTimeInPicker(true)}
 					>
 						<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>
-							{formatDisplayTime(dayData.time_in)}
+							{dayData.time_in ? formatDisplayTime(dayData.time_in) : "HH:MM"}
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -207,7 +208,7 @@ export const DaySection: React.FC<DaySectionProps> = ({ dayData, onDayDataChange
 						onPress={() => setShowTimeOutPicker(true)}
 					>
 						<Text style={tw`text-base font-medium text-[${colors.text.primary}]`}>
-							{formatDisplayTime(dayData.time_out)}
+							{dayData.time_out ? formatDisplayTime(dayData.time_out) : "HH:MM"}
 						</Text>
 					</TouchableOpacity>
 				</View>

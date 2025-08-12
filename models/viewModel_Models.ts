@@ -57,3 +57,10 @@ export interface ExportTemplate {
     content_json: string | null;
     date_created: string;
 }
+
+
+export interface DayDetails {
+	day: Day | null;
+	activities: Activity[] | null;
+	specialActivities: SpecialActivity[] | null;
+}
