@@ -90,10 +90,12 @@ export async function responsibilitiesSummaryExists(user_id: number): Promise<nu
  * Checks for existing log templates and returns a list of their IDs and names.
  * @returns A list of template IDs and names or null if none exist.
  */
-export async function logTemplatesExist(): Promise<{ log_template_id: number; name: string; color_code:string }[] | null> {
+export async function logTemplatesExist(): Promise<{ log_template_id: number; name: string; color_code: string }[] | null> {
 	try {
 		const db = await setupDatabase();
-		const results = await db.getAllAsync<{ log_template_id: number; name: string; color_code:string }>(`SELECT log_template_id, name, color_code FROM Log_Template;`);
+		const results = await db.getAllAsync<{ log_template_id: number; name: string; color_code: string }>(
+			`SELECT log_template_id, name, color_code FROM Log_Template;`
+		);
 		return results.length > 0 ? results : null;
 	} catch (error) {
 		console.error("Error checking log templates existence:", error);
@@ -198,6 +200,19 @@ export async function readLogTemplate(log_template_id: number): Promise<LogTempl
 	}
 }
 
+export async function readResponsibilitySummary(responsibilities_id: number): Promise<ResponsibilitiesSummary | null> {
+	try {
+		const db = await setupDatabase();
+		const result = await db.getFirstAsync<ResponsibilitiesSummary>(`SELECT * FROM Responsibilities_Summary WHERE responsibilities_id = ?;`, [
+			responsibilities_id,
+		]);
+		return result || null;
+	} catch (error) {
+		console.error("Error reading responsibility summary: ", error);
+		return null
+	}
+}
+
 /**
  * Reads a specific export template by its ID.
  * @param export_template_id The ID of the template to retrieve.
@@ -214,13 +229,13 @@ export async function readExportTemplate(export_template_id: number): Promise<Ex
 	}
 }
 
-export async function readAllTableData(tableName:string) {
-    try{
-        const db = await setupDatabase();
-        const result = await db.getAllAsync(`SELECT * FROM ${tableName}`);
-        return result
-    } catch (error){
-        console.error("Error reading the table: ", tableName, "\n ", error)
-        return null
-    }
+export async function readAllTableData(tableName: string) {
+	try {
+		const db = await setupDatabase();
+		const result = await db.getAllAsync(`SELECT * FROM ${tableName}`);
+		return result;
+	} catch (error) {
+		console.error("Error reading the table: ", tableName, "\n ", error);
+		return null;
+	}
 }

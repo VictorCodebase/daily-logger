@@ -64,3 +64,15 @@ export interface DayDetails {
 	activities: Activity[] | null;
 	specialActivities: SpecialActivity[] | null;
 }
+
+export interface WorkSchedulePeriod {
+	start: string;
+	end: string;
+	expected_time_in: string;
+	expected_time_out: string;
+}
+
+export interface KeyContribution {
+	title: string;
+	content: string;
+}
