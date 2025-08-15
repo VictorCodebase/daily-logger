@@ -456,6 +456,526 @@ const generateProfessionalHTML = (data: ReportData, options: ExportOptions): str
 };
 
 /**
+ * Generate a strict, monotone HTML document
+ */
+const generateMonotoneHTML = (data: ReportData, options: ExportOptions): string => {
+    const currentDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${data.reportTitle}</title>
+        <style>
+            body {
+                font-family: 'Courier New', Courier, monospace;
+                line-height: 1.5;
+                color: #000000;
+                background: #ffffff;
+                padding: 30px;
+                max-width: 210mm;
+                margin: 0 auto;
+            }
+            h1, h2, h3 {
+                font-family: 'Courier New', Courier, monospace;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #000;
+                padding-bottom: 10px;
+            }
+            .title {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            .subtitle {
+                font-size: 14px;
+            }
+            .section-title {
+                font-size: 18px;
+                font-weight: bold;
+                margin: 25px 0 10px 0;
+                padding-bottom: 5px;
+                border-bottom: 1px solid #000;
+                text-transform: uppercase;
+            }
+            .subsection-title {
+                font-size: 14px;
+                font-weight: bold;
+                margin: 15px 0 5px 0;
+            }
+            .content {
+                font-size: 12px;
+                margin-bottom: 10px;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            .signature-section {
+                margin-top: 50px;
+                border-top: 1px solid #000;
+                padding-top: 20px;
+            }
+            .signature-line {
+                width: 250px;
+                border-bottom: 1px solid #000;
+                margin: 20px 0 5px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="title">${data.reportTitle}</div>
+            <div class="subtitle">Report for the period: ${data.reportingPeriod}</div>
+            <div class="subtitle">Generated on ${currentDate}</div>
+        </div>
+        
+        ${options.includeUserRoles && data.userRoles ? `
+        <div class="section-title">User Roles</div>
+        <div class="content">Position: ${data.userRoles}</div>
+        ` : ""}
+
+        ${options.includeWorkSchedule && data.workSchedule ? `
+        <div class="section-title">Work Schedule</div>
+        ${data.workSchedule.map(schedule => `
+        <div class="content">${formatWorkSchedulePeriod(schedule)}</div>
+        `).join("")}
+        ` : ""}
+
+        ${options.includeResponsibilitiesSummary && data.responsibilitiesSummary ? `
+        <div class="section-title">Monthly Summary of Responsibilities</div>
+        <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
+        ` : ""}
+
+        ${options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0 ? `
+        <div class="section-title">Key Contributions</div>
+        ${data.keyContributions.map(contribution => `
+        <div class="content">
+            <div class="subsection-title">${contribution.title}</div>
+            ${contribution.content.replace(/\n/g, "<br>")}
+        </div>
+        `).join("")}
+        ` : ""}
+
+        ${options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0 ? `
+        <div class="page-break section-title">Detailed Daily Log</div>
+        ${data.detailedDailyLog.map(dayDetails => `
+        ${dayDetails.day ? `
+        <div class="subsection-title">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()}</div>
+        <div class="content">
+            Time In: ${dayDetails.day.time_in || "Not recorded"}<br>
+            Time Out: ${dayDetails.day.time_out || "Not recorded"}
+        </div>
+        ${dayDetails.activities && dayDetails.activities.length > 0 ? `
+        <div class="content">
+            Activities:<br>
+            ${dayDetails.activities.map(activity => `&nbsp;&nbsp;&nbsp;&nbsp;• ${formatActivity(activity)}`).join("<br>")}
+        </div>
+        ` : ""}
+        ` : ""}`).join("")}
+        ` : ""}
+        
+        ${options.includeConclusions && data.conclusions ? `
+        <div class="section-title">Conclusion</div>
+        <div class="content">${data.conclusions.replace(/\n/g, "<br>")}</div>
+        ` : ""}
+
+        <div class="signature-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="margin-top: 5px; font-size: 10px;">${data.userName}<br>Employee Signature</div>
+                </div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="margin-top: 5px; font-size: 10px;">Supervisor Signature<br>Date: ________________</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+};
+
+/**
+ * Generate a clean, simple HTML document
+ */
+const generateSimpleHTML = (data: ReportData, options: ExportOptions): string => {
+    const currentDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${data.reportTitle}</title>
+        <style>
+            body {
+                font-family: 'Georgia', serif;
+                line-height: 1.6;
+                color: #333333;
+                background: #fdfdfd;
+                padding: 30px;
+                max-width: 210mm;
+                margin: 0 auto;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #cccccc;
+            }
+            .title {
+                font-size: 26px;
+                font-weight: bold;
+                color: #222;
+                margin-bottom: 8px;
+            }
+            .subtitle {
+                font-size: 14px;
+                color: #666;
+            }
+            .section {
+                margin-bottom: 25px;
+            }
+            .section-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #555;
+                margin-bottom: 12px;
+                border-bottom: 1px solid #e0e0e0;
+                padding-bottom: 5px;
+            }
+            .subsection-title {
+                font-size: 16px;
+                font-weight: bold;
+                color: #444;
+                margin: 15px 0 8px 0;
+            }
+            .content {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+            .day-entry {
+                margin: 20px 0;
+            }
+            .day-header {
+                font-size: 16px;
+                font-weight: bold;
+                color: #444;
+                margin-bottom: 10px;
+            }
+            .activity-item {
+                padding: 5px 0;
+                font-size: 14px;
+            }
+            .signature-section {
+                margin-top: 50px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+            }
+            .signature-line {
+                border-bottom: 1px solid #555;
+                width: 250px;
+                margin: 20px 0 5px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="title">${data.reportTitle}</div>
+            <div class="subtitle">Report for the period: ${data.reportingPeriod}</div>
+            <div class="subtitle">Generated on ${currentDate}</div>
+        </div>
+
+        ${options.includeUserRoles && data.userRoles ? `
+        <div class="section">
+            <div class="section-title">User Roles</div>
+            <div class="content">Position: ${data.userRoles}</div>
+        </div>
+        ` : ""}
+
+        ${options.includeWorkSchedule && data.workSchedule ? `
+        <div class="section">
+            <div class="section-title">Work Schedule</div>
+            ${data.workSchedule.map(schedule => `
+            <div class="content">${formatWorkSchedulePeriod(schedule)}</div>
+            `).join("")}
+        </div>
+        ` : ""}
+
+        ${options.includeResponsibilitiesSummary && data.responsibilitiesSummary ? `
+        <div class="section">
+            <div class="section-title">Monthly Summary of Responsibilities</div>
+            <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
+        </div>
+        ` : ""}
+
+        ${options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0 ? `
+        <div class="section">
+            <div class="section-title">Key Contributions</div>
+            ${data.keyContributions.map(contribution => `
+            <div class="content">
+                <div class="subsection-title">${contribution.title}</div>
+                ${contribution.content.replace(/\n/g, "<br>")}
+            </div>
+            `).join("")}
+        </div>
+        ` : ""}
+
+        ${options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0 ? `
+        <div class="section page-break">
+            <div class="section-title">Detailed Daily Log</div>
+            ${data.detailedDailyLog.map(dayDetails => `
+            ${dayDetails.day ? `
+            <div class="day-entry">
+                <div class="day-header">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()}</div>
+                <div class="content">
+                    Time In: ${dayDetails.day.time_in || "Not recorded"} | Time Out: ${dayDetails.day.time_out || "Not recorded"}
+                </div>
+                ${dayDetails.activities && dayDetails.activities.length > 0 ? `
+                <div class="content">
+                    <div style="font-weight: bold; margin-bottom: 5px;">Activities:</div>
+                    ${dayDetails.activities.map(activity => `<div class="activity-item">${formatActivity(activity)}</div>`).join("")}
+                </div>
+                ` : ""}
+            </div>
+            ` : ""}`).join("")}
+        </div>
+        ` : ""}
+
+        ${options.includeConclusions && data.conclusions ? `
+        <div class="section">
+            <div class="section-title">Conclusion</div>
+            <div class="content">${data.conclusions.replace(/\n/g, "<br>")}</div>
+        </div>
+        ` : ""}
+
+        <div class="signature-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                        ${data.userName}<br>Employee Signature
+                    </div>
+                </div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                        Supervisor Signature<br>Date: ________________
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+};
+
+/**
+ * Generate a creative, box-free HTML document
+ */
+const generateCreativeHTML = (data: ReportData, options: ExportOptions): string => {
+    const currentDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${data.reportTitle}</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700&display=swap');
+            
+            body {
+                font-family: 'Roboto', sans-serif;
+                line-height: 1.8;
+                color: #263238;
+                background: #fafafa;
+                padding: 40px;
+                max-width: 210mm;
+                margin: 0 auto;
+            }
+            .header {
+                text-align: left;
+                margin-bottom: 40px;
+            }
+            .title {
+                font-family: 'Lora', serif;
+                font-size: 36px;
+                font-weight: 700;
+                color: #37474F;
+                margin-bottom: 5px;
+            }
+            .subtitle {
+                font-size: 18px;
+                font-style: italic;
+                color: #78909C;
+                margin-bottom: 5px;
+            }
+            .date-info {
+                font-size: 14px;
+                color: #90A4AE;
+                font-weight: 300;
+            }
+            .section {
+                margin-top: 40px;
+            }
+            .section-title {
+                font-family: 'Lora', serif;
+                font-size: 24px;
+                font-weight: 700;
+                color: #546E7A;
+                margin-bottom: 20px;
+                position: relative;
+            }
+            .section-title::after {
+                content: '';
+                display: block;
+                width: 50px;
+                height: 3px;
+                background-color: #546E7A;
+                margin-top: 8px;
+            }
+            .content {
+                font-size: 16px;
+                font-weight: 300;
+            }
+            .day-header {
+                font-family: 'Lora', serif;
+                font-size: 20px;
+                font-weight: 700;
+                color: #455A64;
+                margin-top: 30px;
+                margin-bottom: 10px;
+            }
+            .activity-item {
+                padding: 10px 0;
+                border-bottom: 1px dotted #CFD8DC;
+            }
+            .activity-item:last-child {
+                border-bottom: none;
+            }
+            .signature-section {
+                margin-top: 80px;
+            }
+            .signature-line {
+                border-bottom: 1px solid #455A64;
+                width: 300px;
+                margin: 30px 0 10px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="subtitle">Report for the period: ${data.reportingPeriod}</div>
+            <div class="title">${data.reportTitle}</div>
+            <div class="date-info">Generated on ${currentDate}</div>
+        </div>
+
+        ${options.includeUserRoles && data.userRoles ? `
+        <div class="section">
+            <div class="section-title">Position</div>
+            <div class="content">${data.userRoles}</div>
+        </div>
+        ` : ""}
+
+        ${options.includeWorkSchedule && data.workSchedule ? `
+        <div class="section">
+            <div class="section-title">Work Schedule</div>
+            <div class="content">
+                ${data.workSchedule.map(schedule => `
+                <div style="margin-bottom: 8px;">${formatWorkSchedulePeriod(schedule)}</div>
+                `).join("")}
+            </div>
+        </div>
+        ` : ""}
+        
+        ${options.includeResponsibilitiesSummary && data.responsibilitiesSummary ? `
+        <div class="section">
+            <div class="section-title">Responsibilities Summary</div>
+            <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
+        </div>
+        ` : ""}
+
+        ${options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0 ? `
+        <div class="section">
+            <div class="section-title">Key Contributions</div>
+            <div class="content">
+                ${data.keyContributions.map(contribution => `
+                <div style="margin-bottom: 15px;">
+                    <strong style="display: block; margin-bottom: 5px;">${contribution.title}</strong>
+                    ${contribution.content.replace(/\n/g, "<br>")}
+                </div>
+                `).join("")}
+            </div>
+        </div>
+        ` : ""}
+
+        ${options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0 ? `
+        <div class="section page-break">
+            <div class="section-title">Detailed Daily Log</div>
+            ${data.detailedDailyLog.map(dayDetails => `
+            ${dayDetails.day ? `
+            <div class="day-entry">
+                <div class="day-header">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" })}</div>
+                <div style="font-size: 14px; color: #78909C; margin-bottom: 10px;">
+                    Time In: ${dayDetails.day.time_in || "Not recorded"} | Time Out: ${dayDetails.day.time_out || "Not recorded"}
+                </div>
+                ${dayDetails.activities && dayDetails.activities.length > 0 ? `
+                <div class="content">
+                    ${dayDetails.activities.map(activity => `<div class="activity-item">${formatActivity(activity)}</div>`).join("")}
+                </div>
+                ` : ""}
+            </div>
+            ` : ""}`).join("")}
+        </div>
+        ` : ""}
+
+        ${options.includeConclusions && data.conclusions ? `
+        <div class="section">
+            <div class="section-title">Conclusion</div>
+            <div class="content">${data.conclusions.replace(/\n/g, "<br>")}</div>
+        </div>
+        ` : ""}
+
+        <div class="signature-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="font-size: 12px; color: #666;">${data.userName}<br>Employee Signature</div>
+                </div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="font-size: 12px; color: #666;">Supervisor Signature<br>Date: ________________</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+};
+
+/**
  * Generate filename based on user name and date range
  */
 const generateFileName = (userName: string, startDate: string, endDate: string, format: "pdf" | "word"): string => {
@@ -1028,7 +1548,25 @@ export async function generateReport(
 		}
 
 		// Generate the HTML content
-		const htmlContent = generateProfessionalHTML(reportData, exportOptions);
+		let htmlContent: string;
+		switch (exportOptions.documentFormat) {
+			case "professional":
+				htmlContent = generateProfessionalHTML(reportData, exportOptions);
+				break;
+			case "monotone":
+				htmlContent = generateMonotoneHTML(reportData, exportOptions);
+				break;
+			case "simple":
+				htmlContent = generateSimpleHTML(reportData, exportOptions);
+				break;
+			case "creative":
+				htmlContent = generateCreativeHTML(reportData, exportOptions);
+				break;
+			default:
+				// Fallback to a default format if an invalid one is somehow selected
+				htmlContent = generateProfessionalHTML(reportData, exportOptions);
+				break;
+		}
 
 		// Generate filename
 		const fileName = generateFileName(user.name, startDate, endDate, exportOptions.outputFormat);
