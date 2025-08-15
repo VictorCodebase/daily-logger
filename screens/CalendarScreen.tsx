@@ -377,7 +377,7 @@ export default function CalendarPage() {
 	};
 
 	return (
-		<SafeAreaView style={tw`flex-1 bg-[${colors.background.primary}]`}>
+		<SafeAreaView style={tw`flex-1 bg-[${colors.background.primary}] pb-28`}>
 			{isLoading && (
 				<View style={tw`absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40`}>
 					<ActivityIndicator size="large" color={colors.primary.main} />
@@ -385,7 +385,8 @@ export default function CalendarPage() {
 			)}
 
 			{/* Header */}
-			<View style={tw`p-6`}>
+			<View style={tw`p-6 pt-15`}>
+				<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcom back</Text>
 				<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>Your Calendar</Text>
 				<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Track your daily activities</Text>
 			</View>

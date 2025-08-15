@@ -1,23 +1,12 @@
 
 
-import { User, ResponsibilitiesSummary, KeyContribution, WorkSchedulePeriod, DayDetails } from "../models/ViewModel_Models";
+import { User, ResponsibilitiesSummary, KeyContribution, WorkSchedulePeriod, DayDetails, ExportOptions } from "../models/ViewModel_Models";
 
 // Importing real database service methods from a parent directory
 import { dayExists, readDay, readDays, readUser, responsibilitiesSummaryExists, readResponsibilitySummary } from "../services/DatabaseReadService";
 import { createResponsibilitiesSummary } from "../services/DatabaseCreateService";
 
 
-// Define the interface for the report's content options.
-export interface ExportOptions {
-    includeUserRoles: boolean;
-    includeWorkSchedule: boolean;
-    includeResponsibilitiesSummary: boolean;
-    includeKeyContributions: boolean;
-    includeSpecialActivities: boolean;
-    includeDailyLog: boolean;
-    includeConclusions: boolean;
-    outputFormat: 'pdf' | 'word';
-}
 
 // Define an interface for the fully structured report data.
 export interface ReportData {
