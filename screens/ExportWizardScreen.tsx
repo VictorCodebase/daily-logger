@@ -10,13 +10,7 @@ import { colors } from "../themes/colors";
 import { ExportOptions, KeyContribution } from "../models/ViewModel_Models";
 
 // Import view model functions and types
-import {
-	fetchActiveDays,
-	getResponsibilitiesSummary,
-	generateReport,
-	getDatesInRange,
-	formatDate,
-} from "../stores/ExportViewModel";
+import { fetchActiveDays, getResponsibilitiesSummary, generateReport, getDatesInRange, formatDate } from "../stores/ExportViewModel";
 
 // Calendar constants
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -292,6 +286,7 @@ export default function ExportPage() {
 			);
 
 			if (result && result !== "User not found.") {
+				console.log(result)
 				Alert.alert("Export Successful", `Your ${exportOptions.outputFormat.toUpperCase()} report has been generated successfully!`);
 			} else {
 				throw new Error("Export failed");
@@ -356,10 +351,10 @@ export default function ExportPage() {
 									if (isStart || isEnd) {
 										backgroundColor = colors.primary.main;
 										textColor = colors.text.white;
-									} else if (inRange) {
-										backgroundColor = colors.primary[100];
-										textColor = colors.text.primary;
 									} else if (isActive) {
+										backgroundColor = colors.primary[200];
+										textColor = colors.text.primary;
+									} else if (inRange) {
 										backgroundColor = colors.primary[50];
 										textColor = colors.text.primary;
 									} else {

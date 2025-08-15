@@ -168,6 +168,25 @@ export const formatReportContent = (data: ReportData, options: ExportOptions): s
     return content;
 };
 
+export function extractWorkSchedulePeriods(workScheduleStr: string): WorkSchedulePeriod[] {
+	try {
+		// Parse the JSON string
+		const parsed = JSON.parse(workScheduleStr);
+
+		// Check if periods exists and is an array
+		if (parsed && Array.isArray(parsed.periods)) {
+			return parsed.periods as WorkSchedulePeriod[];
+		}
+
+		// If structure is invalid, return empty array
+		return [];
+	} catch (error) {
+		console.error("Failed to parse work schedule string:", error);
+		return [];
+	}
+}
+
+
 /**
  * The main exported method to generate the report data.
  * This function orchestrates all the helper functions and database calls.
@@ -189,6 +208,7 @@ export async function generateReport(
     conclusions: string | null = null,
     exportOptions: ExportOptions
 ): Promise<string> {
+
 
     const user = await readUser(userId);
     if (!user) {
@@ -226,6 +246,8 @@ export async function generateReport(
         }
     }
 
+    
+
     const reportData: ReportData = {
         reportTitle: `Monthly Job Report For ${user.name}`,
         userName: user.name,
@@ -237,7 +259,8 @@ export async function generateReport(
     }
 
     if (exportOptions.includeWorkSchedule && user.work_schedule) {
-        reportData.workSchedule = JSON.parse(user.work_schedule);
+        const workSchedule = extractWorkSchedulePeriods(user.work_schedule);
+        if (workSchedule) reportData.workSchedule = workSchedule
     }
 
     if (exportOptions.includeResponsibilitiesSummary && responsibilitiesSummaryContent) {
@@ -255,6 +278,7 @@ export async function generateReport(
     if (exportOptions.includeConclusions && conclusions) {
         reportData.conclusions = conclusions;
     }
+    const finalReport = formatReportContent(reportData, exportOptions);
 
-    return formatReportContent(reportData, exportOptions);
+    return finalReport;
 }
