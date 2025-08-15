@@ -13,10 +13,11 @@ import { ExportOptions, KeyContribution } from "../models/ViewModel_Models";
 import {
 	fetchActiveDays,
 	getResponsibilitiesSummary,
-	generateReport,
 	getDatesInRange,
 	formatDate
 } from "../stores/ExportViewModel";
+
+import { generateReport } from "../utils/fileUtils";
 
 // Calendar constants
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
