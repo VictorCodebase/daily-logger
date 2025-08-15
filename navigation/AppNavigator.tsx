@@ -14,6 +14,7 @@ import ExportWizardScreen from "../screens/ExportWizardScreen";
 import AccountScreen from "../screens/AccountScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import LoginSignupScreen from "../screens/OnboardScreen"; 
+import { colors } from "../themes/colors";
 
 // Create the navigators
 const Tab = createBottomTabNavigator();
@@ -54,7 +55,7 @@ const BottomTabNavigator = () => {
 					// Return the icon component
 					return <Ionicons name={iconName} size={size} color={color} />;
 				},
-				tabBarActiveTintColor: "blue",
+				tabBarActiveTintColor: colors.primary.main,
 				tabBarInactiveTintColor: "gray",
 			})}
 		>
