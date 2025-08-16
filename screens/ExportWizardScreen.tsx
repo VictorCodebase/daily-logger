@@ -11,7 +11,6 @@ import { ExportOptions, KeyContribution } from "../models/ViewModel_Models";
 
 // Import view model functions and types
 import { fetchActiveDays, getResponsibilitiesSummary, getDatesInRange, formatDate } from "../stores/ExportViewModel";
-
 import { generateReport } from "../utils/fileUtils";
 
 // Calendar constants
@@ -95,6 +94,7 @@ export default function ExportPage() {
 
 		try {
 			const summary = await getResponsibilitiesSummary(user.user_id);
+			console.log("Summary: ", summary)
 			if (summary) {
 				setResponsibilitiesSummary(summary.content);
 				setExportOptions((prev) => ({ ...prev, includeResponsibilitiesSummary: true }));

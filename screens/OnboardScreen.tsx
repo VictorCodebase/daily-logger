@@ -195,7 +195,7 @@ export default function LoginSignupScreen() {
 						</View>
 						<Text style={tw`text-3xl font-bold text-[${colors.text.primary}]`}>Welcome</Text>
 						<Text style={tw`text-lg text-[${colors.text.secondary}]`}>
-							{isLogin ? "Sign in to your account Mbwaa Media Activity Logger" : "Set up your Mbwaa media Activity logger Account"}
+							{isLogin ? "Sign in to your Mbwaa Media Activity Logger" : "Set up your Mbwaa media Activity logger Account"}
 						</Text>
 					</View>
 

@@ -13,8 +13,8 @@ export async function updateUser({
     name,
     email,
     password_hash,
-    path_to_icon,
-    roles_positions,
+    avatar,
+    role,
     work_schedule
 }: User): Promise<boolean> {
     try {
@@ -28,8 +28,8 @@ export async function updateUser({
             name,
             email,
             password_hash,
-            path_to_icon,
-            roles_positions,
+            avatar,
+            role,
             work_schedule,
             user_id
         ]);

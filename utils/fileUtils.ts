@@ -3,7 +3,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 
 import { createResponsibilitiesSummary } from "../services/DatabaseCreateService";
-import { dayExists, readDay, readUser } from "../services/DatabaseReadService";
+import { dayExists, readDay, readUser, responsibilitiesSummaryExists } from "../services/DatabaseReadService";
 import { KeyContribution, WorkSchedulePeriod, DayDetails, ExportOptions } from "../models/ViewModel_Models";
 import { extractWorkSchedulePeriods, formatDate, getDatesInRange, ReportData } from "../stores/ExportViewModel";
 
@@ -459,13 +459,13 @@ const generateProfessionalHTML = (data: ReportData, options: ExportOptions): str
  * Generate a strict, monotone HTML document
  */
 const generateMonotoneHTML = (data: ReportData, options: ExportOptions): string => {
-    const currentDate = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
+	const currentDate = new Date().toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
 
-    return `
+	return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -538,55 +538,101 @@ const generateMonotoneHTML = (data: ReportData, options: ExportOptions): string 
             <div class="subtitle">Generated on ${currentDate}</div>
         </div>
         
-        ${options.includeUserRoles && data.userRoles ? `
+        ${
+		options.includeUserRoles && data.userRoles
+			? `
         <div class="section-title">User Roles</div>
         <div class="content">Position: ${data.userRoles}</div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeWorkSchedule && data.workSchedule ? `
+        ${
+		options.includeWorkSchedule && data.workSchedule
+			? `
         <div class="section-title">Work Schedule</div>
-        ${data.workSchedule.map(schedule => `
+        ${data.workSchedule
+		.map(
+			(schedule) => `
         <div class="content">${formatWorkSchedulePeriod(schedule)}</div>
-        `).join("")}
-        ` : ""}
+        `
+		)
+		.join("")}
+        `
+			: ""
+	}
 
-        ${options.includeResponsibilitiesSummary && data.responsibilitiesSummary ? `
+        ${
+		options.includeResponsibilitiesSummary && data.responsibilitiesSummary
+			? `
         <div class="section-title">Monthly Summary of Responsibilities</div>
         <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0 ? `
+        ${
+		options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0
+			? `
         <div class="section-title">Key Contributions</div>
-        ${data.keyContributions.map(contribution => `
+        ${data.keyContributions
+		.map(
+			(contribution) => `
         <div class="content">
             <div class="subsection-title">${contribution.title}</div>
             ${contribution.content.replace(/\n/g, "<br>")}
         </div>
-        `).join("")}
-        ` : ""}
+        `
+		)
+		.join("")}
+        `
+			: ""
+	}
 
-        ${options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0 ? `
+        ${
+		options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
+			? `
         <div class="page-break section-title">Detailed Daily Log</div>
-        ${data.detailedDailyLog.map(dayDetails => `
-        ${dayDetails.day ? `
-        <div class="subsection-title">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()}</div>
+        ${data.detailedDailyLog
+		.map(
+			(dayDetails) => `
+        ${
+		dayDetails.day
+			? `
+        <div class="subsection-title">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00")
+					.toLocaleDateString("en-US", { weekday: "long" })
+					.toUpperCase()}</div>
         <div class="content">
             Time In: ${dayDetails.day.time_in || "Not recorded"}<br>
             Time Out: ${dayDetails.day.time_out || "Not recorded"}
         </div>
-        ${dayDetails.activities && dayDetails.activities.length > 0 ? `
+        ${
+		dayDetails.activities && dayDetails.activities.length > 0
+			? `
         <div class="content">
             Activities:<br>
-            ${dayDetails.activities.map(activity => `&nbsp;&nbsp;&nbsp;&nbsp;• ${formatActivity(activity)}`).join("<br>")}
+            ${dayDetails.activities.map((activity) => `&nbsp;&nbsp;&nbsp;&nbsp;• ${formatActivity(activity)}`).join("<br>")}
         </div>
-        ` : ""}
-        ` : ""}`).join("")}
-        ` : ""}
+        `
+			: ""
+	}
+        `
+			: ""
+	}`
+		)
+		.join("")}
+        `
+			: ""
+	}
         
-        ${options.includeConclusions && data.conclusions ? `
+        ${
+		options.includeConclusions && data.conclusions
+			? `
         <div class="section-title">Conclusion</div>
         <div class="content">${data.conclusions.replace(/\n/g, "<br>")}</div>
-        ` : ""}
+        `
+			: ""
+	}
 
         <div class="signature-section">
             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -609,13 +655,13 @@ const generateMonotoneHTML = (data: ReportData, options: ExportOptions): string 
  * Generate a clean, simple HTML document
  */
 const generateSimpleHTML = (data: ReportData, options: ExportOptions): string => {
-    const currentDate = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
+	const currentDate = new Date().toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
 
-    return `
+	return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -701,68 +747,114 @@ const generateSimpleHTML = (data: ReportData, options: ExportOptions): string =>
             <div class="subtitle">Generated on ${currentDate}</div>
         </div>
 
-        ${options.includeUserRoles && data.userRoles ? `
+        ${
+		options.includeUserRoles && data.userRoles
+			? `
         <div class="section">
             <div class="section-title">User Roles</div>
             <div class="content">Position: ${data.userRoles}</div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeWorkSchedule && data.workSchedule ? `
+        ${
+		options.includeWorkSchedule && data.workSchedule
+			? `
         <div class="section">
             <div class="section-title">Work Schedule</div>
-            ${data.workSchedule.map(schedule => `
+            ${data.workSchedule
+			.map(
+				(schedule) => `
             <div class="content">${formatWorkSchedulePeriod(schedule)}</div>
-            `).join("")}
+            `
+			)
+			.join("")}
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeResponsibilitiesSummary && data.responsibilitiesSummary ? `
+        ${
+		options.includeResponsibilitiesSummary && data.responsibilitiesSummary
+			? `
         <div class="section">
             <div class="section-title">Monthly Summary of Responsibilities</div>
             <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0 ? `
+        ${
+		options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0
+			? `
         <div class="section">
             <div class="section-title">Key Contributions</div>
-            ${data.keyContributions.map(contribution => `
+            ${data.keyContributions
+			.map(
+				(contribution) => `
             <div class="content">
                 <div class="subsection-title">${contribution.title}</div>
                 ${contribution.content.replace(/\n/g, "<br>")}
             </div>
-            `).join("")}
+            `
+			)
+			.join("")}
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0 ? `
+        ${
+		options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
+			? `
         <div class="section page-break">
             <div class="section-title">Detailed Daily Log</div>
-            ${data.detailedDailyLog.map(dayDetails => `
-            ${dayDetails.day ? `
+            ${data.detailedDailyLog
+			.map(
+				(dayDetails) => `
+            ${
+			dayDetails.day
+				? `
             <div class="day-entry">
-                <div class="day-header">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()}</div>
+                <div class="day-header">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00")
+						.toLocaleDateString("en-US", { weekday: "long" })
+						.toUpperCase()}</div>
                 <div class="content">
                     Time In: ${dayDetails.day.time_in || "Not recorded"} | Time Out: ${dayDetails.day.time_out || "Not recorded"}
                 </div>
-                ${dayDetails.activities && dayDetails.activities.length > 0 ? `
+                ${
+			dayDetails.activities && dayDetails.activities.length > 0
+				? `
                 <div class="content">
                     <div style="font-weight: bold; margin-bottom: 5px;">Activities:</div>
-                    ${dayDetails.activities.map(activity => `<div class="activity-item">${formatActivity(activity)}</div>`).join("")}
+                    ${dayDetails.activities.map((activity) => `<div class="activity-item">${formatActivity(activity)}</div>`).join("")}
                 </div>
-                ` : ""}
+                `
+				: ""
+		}
             </div>
-            ` : ""}`).join("")}
+            `
+				: ""
+		}`
+			)
+			.join("")}
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeConclusions && data.conclusions ? `
+        ${
+		options.includeConclusions && data.conclusions
+			? `
         <div class="section">
             <div class="section-title">Conclusion</div>
             <div class="content">${data.conclusions.replace(/\n/g, "<br>")}</div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
         <div class="signature-section">
             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -789,13 +881,13 @@ const generateSimpleHTML = (data: ReportData, options: ExportOptions): string =>
  * Generate a creative, box-free HTML document
  */
 const generateCreativeHTML = (data: ReportData, options: ExportOptions): string => {
-    const currentDate = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
+	const currentDate = new Date().toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
 
-    return `
+	return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -892,71 +984,117 @@ const generateCreativeHTML = (data: ReportData, options: ExportOptions): string 
             <div class="date-info">Generated on ${currentDate}</div>
         </div>
 
-        ${options.includeUserRoles && data.userRoles ? `
+        ${
+		options.includeUserRoles && data.userRoles
+			? `
         <div class="section">
             <div class="section-title">Position</div>
             <div class="content">${data.userRoles}</div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeWorkSchedule && data.workSchedule ? `
+        ${
+		options.includeWorkSchedule && data.workSchedule
+			? `
         <div class="section">
             <div class="section-title">Work Schedule</div>
             <div class="content">
-                ${data.workSchedule.map(schedule => `
+                ${data.workSchedule
+			.map(
+				(schedule) => `
                 <div style="margin-bottom: 8px;">${formatWorkSchedulePeriod(schedule)}</div>
-                `).join("")}
+                `
+			)
+			.join("")}
             </div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
         
-        ${options.includeResponsibilitiesSummary && data.responsibilitiesSummary ? `
+        ${
+		options.includeResponsibilitiesSummary && data.responsibilitiesSummary
+			? `
         <div class="section">
             <div class="section-title">Responsibilities Summary</div>
             <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0 ? `
+        ${
+		options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0
+			? `
         <div class="section">
             <div class="section-title">Key Contributions</div>
             <div class="content">
-                ${data.keyContributions.map(contribution => `
+                ${data.keyContributions
+			.map(
+				(contribution) => `
                 <div style="margin-bottom: 15px;">
                     <strong style="display: block; margin-bottom: 5px;">${contribution.title}</strong>
                     ${contribution.content.replace(/\n/g, "<br>")}
                 </div>
-                `).join("")}
+                `
+			)
+			.join("")}
             </div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0 ? `
+        ${
+		options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
+			? `
         <div class="section page-break">
             <div class="section-title">Detailed Daily Log</div>
-            ${data.detailedDailyLog.map(dayDetails => `
-            ${dayDetails.day ? `
+            ${data.detailedDailyLog
+			.map(
+				(dayDetails) => `
+            ${
+			dayDetails.day
+				? `
             <div class="day-entry">
-                <div class="day-header">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" })}</div>
+                <div class="day-header">${formatDate(dayDetails.day.date)} - ${new Date(dayDetails.day.date + "T00:00:00").toLocaleDateString("en-US", {
+						weekday: "long",
+				  })}</div>
                 <div style="font-size: 14px; color: #78909C; margin-bottom: 10px;">
                     Time In: ${dayDetails.day.time_in || "Not recorded"} | Time Out: ${dayDetails.day.time_out || "Not recorded"}
                 </div>
-                ${dayDetails.activities && dayDetails.activities.length > 0 ? `
+                ${
+			dayDetails.activities && dayDetails.activities.length > 0
+				? `
                 <div class="content">
-                    ${dayDetails.activities.map(activity => `<div class="activity-item">${formatActivity(activity)}</div>`).join("")}
+                    ${dayDetails.activities.map((activity) => `<div class="activity-item">${formatActivity(activity)}</div>`).join("")}
                 </div>
-                ` : ""}
+                `
+				: ""
+		}
             </div>
-            ` : ""}`).join("")}
+            `
+				: ""
+		}`
+			)
+			.join("")}
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
-        ${options.includeConclusions && data.conclusions ? `
+        ${
+		options.includeConclusions && data.conclusions
+			? `
         <div class="section">
             <div class="section-title">Conclusion</div>
             <div class="content">${data.conclusions.replace(/\n/g, "<br>")}</div>
         </div>
-        ` : ""}
+        `
+			: ""
+	}
 
         <div class="signature-section">
             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -1489,15 +1627,18 @@ export async function generateReport(
 
 		let responsibilitiesSummaryContent: string | null = null;
 		if (exportOptions.includeResponsibilitiesSummary && responsibilitiesSummaryInput && responsibilitiesSummaryInput.length > 0) {
-			try {
-				const newId = await createResponsibilitiesSummary(responsibilitiesSummaryInput, userId);
-				if (newId) {
-					responsibilitiesSummaryContent = responsibilitiesSummaryInput;
-				} else {
-					console.error("Failed to create new responsibilities summary.");
+			const summaryId = await responsibilitiesSummaryExists(userId);
+			if (!summaryId) {
+				try {
+					const newId = await createResponsibilitiesSummary(responsibilitiesSummaryInput, userId);
+					if (newId) {
+						responsibilitiesSummaryContent = responsibilitiesSummaryInput;
+					} else {
+						console.error("Failed to create new responsibilities summary.");
+					}
+				} catch (error) {
+					console.error("Error creating responsibilities summary:", error);
 				}
-			} catch (error) {
-				console.error("Error creating responsibilities summary:", error);
 			}
 		}
 
@@ -1520,8 +1661,8 @@ export async function generateReport(
 			reportingPeriod: `${formatDate(startDate)} – ${formatDate(endDate)}`,
 		};
 
-		if (exportOptions.includeUserRoles && user.roles_positions) {
-			reportData.userRoles = user.roles_positions;
+		if (exportOptions.includeUserRoles && user.role) {
+			reportData.userRoles = user.role;
 		}
 
 		if (exportOptions.includeWorkSchedule && user.work_schedule) {
