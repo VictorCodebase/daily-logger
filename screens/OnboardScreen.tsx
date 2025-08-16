@@ -190,12 +190,12 @@ export default function LoginSignupScreen() {
 					{/* Header with Logos */}
 					<View style={tw`flex items-center mt-10 mb-8`}>
 						{/* Placeholder for your combined logo image */}
-						<View
-							style={tw`w-24 h-24 bg-[${colors.surface.elevated}] rounded-full mb-2 border border-[${colors.border.primary}]`}
-						></View>
+						<View style={tw`w-24 h-24 bg-[${colors.surface.elevated}]  mb-2 `}>
+							<Image source={require("../assets/touch-icon-512x512.png")} style={{ width: 100, height: 100 }} />
+						</View>
 						<Text style={tw`text-3xl font-bold text-[${colors.text.primary}]`}>Welcome</Text>
 						<Text style={tw`text-lg text-[${colors.text.secondary}]`}>
-							{isLogin ? "Sign in to your account" : "Create a new account"}
+							{isLogin ? "Sign in to your account Mbwaa Media Activity Logger" : "Set up your Mbwaa media Activity logger Account"}
 						</Text>
 					</View>
 

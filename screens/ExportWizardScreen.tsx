@@ -72,7 +72,7 @@ export default function ExportPage() {
 	// Load active days and responsibilities summary
 	useEffect(() => {
 		loadActiveDays();
-		if (user?.id) {
+		if (user?.user_id) {
 			loadResponsibilitiesSummary();
 		}
 	}, [user]);
@@ -91,10 +91,10 @@ export default function ExportPage() {
 	};
 
 	const loadResponsibilitiesSummary = async () => {
-		if (!user?.id) return;
+		if (!user?.user_id) return;
 
 		try {
-			const summary = await getResponsibilitiesSummary(parseInt(user.id));
+			const summary = await getResponsibilitiesSummary(user.user_id);
 			if (summary) {
 				setResponsibilitiesSummary(summary.content);
 				setExportOptions((prev) => ({ ...prev, includeResponsibilitiesSummary: true }));
@@ -248,7 +248,7 @@ export default function ExportPage() {
 			return;
 		}
 
-		if (!user?.id) {
+		if (!user?.user_id) {
 			Alert.alert("Error", "User not found");
 			return;
 		}
@@ -272,7 +272,7 @@ export default function ExportPage() {
 	};
 
 	const performExport = async () => {
-		if (!user?.id) return;
+		if (!user?.user_id) return;
 
 		try {
 			setIsLoading(true);
@@ -281,7 +281,7 @@ export default function ExportPage() {
 			const result = await generateReport(
 				startDate,
 				endDate,
-				parseInt(user.id),
+				user.user_id,
 				responsibilitiesSummary || null,
 				keyContributions,
 				conclusions || null,
