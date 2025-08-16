@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import { User } from "../models/ViewModel_Models";
 
 // Constants
 const USER_STORAGE_KEY = "@user_data";
@@ -9,14 +10,14 @@ const AUTH_TOKEN_KEY = "auth_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
 // Define the shape of the user data
-export interface User {
-	id: string;
-	name: string;
-	email: string;
-	avatar?: string;
-	role?: string;
-	preferences?: Record<string, any>;
-}
+// export interface User {
+// 	id: string;
+// 	name: string;
+// 	email: string;
+// 	avatar?: string;
+// 	role?: string;
+// 	workSchedule?: string;
+// }
 
 // Define authentication tokens
 interface AuthTokens {

@@ -1,15 +1,25 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Pressable, Platform, KeyboardAvoidingView } from "react-native";
+import {
+	View,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	SafeAreaView,
+	ScrollView,
+	ActivityIndicator,
+	KeyboardAvoidingView,
+	ActionSheetIOS,
+	Platform,
+	Alert,
+	Image
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import tw from "twrnc";
-import { signUpUser, loginUser } from "../stores/OnboardViewModel";
+import { signUpUser, loginUser, handleProfilePhotoUpload, handleProfilePhotoCameraCapture, getImagePickerOptions } from "../stores/OnboardViewModel";
 import WorkSchedulePeriodInput from "../components/OnboardComponents/WorkSchedulePeriodInput";
 import { WorkSchedulePeriod } from "../models/View_Models";
 import { useUser } from "../context/UserContext";
 import { colors } from "../themes/colors";
-
-
-
 
 // Helper component for work schedule period input
 
@@ -37,7 +47,10 @@ export default function LoginSignupScreen() {
 			expected_time_out: "17:00",
 		},
 	]);
-	const [profilePhotoPath, setProfilePhotoPath] = useState("");
+	const [selectedImagePath, setSelectedImagePath] = useState<string>("");
+	const [selectedImageUri, setSelectedImageUri] = useState<string| null>(null);
+	const [isUploadingImage, setIsUploadingImage] = useState(false);
+
 	const userContext = useUser();
 
 	// Helper to add roles from a comma-separated string
@@ -80,7 +93,7 @@ export default function LoginSignupScreen() {
 		}
 
 		const workScheduleObject = { periods: workSchedule };
-		const response = await signUpUser(signupName, signupEmail, signupPassword, roles, workScheduleObject, profilePhotoPath, userContext);
+		const response = await signUpUser(signupName, signupEmail, signupPassword, roles, workScheduleObject, selectedImagePath, userContext);
 		if (response.status === "error") {
 			setErrorMessage(response.message);
 		}
@@ -105,6 +118,64 @@ export default function LoginSignupScreen() {
 
 	const updatePeriod = (index: number, updatedPeriod: WorkSchedulePeriod) => {
 		setWorkSchedule(workSchedule.map((period, i) => (i === index ? updatedPeriod : period)));
+	};
+
+	const handleImageUploadPress = () => {
+		if (Platform.OS === "ios") {
+			// Use ActionSheetIOS for iOS
+			const options = getImagePickerOptions();
+			ActionSheetIOS.showActionSheetWithOptions(
+				{
+					options: options.map((opt) => opt.title),
+					cancelButtonIndex: 2,
+				},
+				(buttonIndex) => {
+					const handler = options[buttonIndex].handler;
+					if (handler) {
+						handleImageSelection(handler);
+					}
+				}
+			);
+		} else {
+			// Use Alert for Android
+			Alert.alert("Select Photo", "Choose how you want to select your profile photo", [
+				{
+					text: "Choose from Library",
+					onPress: () => handleImageSelection(handleProfilePhotoUpload),
+				},
+				{
+					text: "Take Photo",
+					onPress: () => handleImageSelection(handleProfilePhotoCameraCapture),
+				},
+				{
+					text: "Cancel",
+					style: "cancel",
+				},
+			]);
+		}
+	};
+
+	// Helper method to handle the actual image selection
+	const handleImageSelection = async (selectionMethod: () => Promise<any>) => {
+		setIsUploadingImage(true);
+
+		try {
+			const result = await selectionMethod();
+
+			if (result.status === "success") {
+				setSelectedImagePath(result.imagePath || "");
+				setSelectedImageUri(result.imageUri || "");
+				Alert.alert("Success", result.message);
+			} else if (result.status === "error") {
+				Alert.alert("Error", result.message);
+			}
+			// Handle 'cancelled' status silently
+		} catch (error) {
+			Alert.alert("Error", "An unexpected error occurred");
+			console.error("Image selection error:", error);
+		} finally {
+			setIsUploadingImage(false);
+		}
 	};
 
 	return (
@@ -225,12 +296,36 @@ export default function LoginSignupScreen() {
 								value={signupPasswordConfirm}
 								onChangeText={setSignupPasswordConfirm}
 							/>
+
+							{selectedImageUri && (
+								<Image
+									source={{ uri: selectedImageUri }}
+									style={tw`w-24 h-24 rounded-full mb-4 self-center`}
+									resizeMode="cover"
+								/>
+							)}
+
 							<TouchableOpacity
-								style={tw`flex-row items-center justify-center py-3 bg-[${colors.surface.elevated}] border border-dashed border-[${colors.primary.main}] rounded-xl mb-4`}
-								onPress={() => alert("Photo upload functionality will be here!")}
+								style={tw`flex-row items-center justify-center py-3 bg-[${
+									colors.surface.elevated
+								}] border border-dashed border-[${colors.primary.main}] rounded-xl mb-4 ${
+									isUploadingImage ? "opacity-50" : ""
+								}`}
+								onPress={handleImageUploadPress}
+								disabled={isUploadingImage}
 							>
-								<Feather name="upload" size={18} color={colors.primary.main} />
-								<Text style={tw`ml-2 text-[${colors.primary.main}] font-medium`}>Upload Profile Photo</Text>
+								<Feather
+									name={selectedImageUri ? "check-circle" : "upload"}
+									size={18}
+									color={colors.primary.main}
+								/>
+								<Text style={tw`ml-2 text-[${colors.primary.main}] font-medium`}>
+									{isUploadingImage
+										? "Uploading..."
+										: selectedImageUri
+										? "Photo Selected"
+										: "Upload Profile Photo"}
+								</Text>
 							</TouchableOpacity>
 
 							{/* Job Details */}

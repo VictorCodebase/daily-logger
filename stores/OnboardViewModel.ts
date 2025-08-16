@@ -1,7 +1,12 @@
 import { userExists, readUser } from "../services/DatabaseReadService";
 import { createUser } from "../services/DatabaseCreateService";
-import { useUser, User } from "../context/UserContext";
-import { getHash, comparePassword } from "../utils/AuthUtil"; // Assuming these utilities for password hashing and comparison
+import { useUser } from "../context/UserContext";
+import { getHash, comparePassword } from "../utils/AuthUtil"; 
+import { User, WorkSchedule, WorkSchedulePeriod, ImageUploadResult } from "../models/ViewModel_Models";
+
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 
 // Define the response object shape
 interface Response {
@@ -9,17 +14,184 @@ interface Response {
 	message: string;
 }
 
-// Define the shape of the user details for the sign-up function
-interface WorkSchedulePeriod {
-	start: string;
-	end: string;
-	expected_time_in: string;
-	expected_time_out: string;
+
+
+
+/**
+ * Handles the profile photo upload process.
+ * Requests permissions, opens image picker, and optionally saves the image locally.
+ * @param saveLocally Whether to save the image to local storage (default: true)
+ * @returns Promise with the result containing the image path/URI
+ */
+export async function handleProfilePhotoUpload(saveLocally: boolean = true): Promise<ImageUploadResult> {
+	try {
+		// --- 1. Request permissions ---
+		const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+		
+		if (permissionResult.status !== 'granted') {
+			return {
+				status: 'error',
+				message: 'Permission to access media library is required!',
+			};
+		}
+
+		// --- 2. Launch image picker ---
+		const pickerResult = await ImagePicker.launchImageLibraryAsync({
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
+			allowsEditing: true,
+			aspect: [1, 1], // Square aspect ratio for profile photos
+			quality: 0.8, // Reduce file size while maintaining good quality
+			base64: false, // We don't need base64 for file operations
+		});
+
+		if (pickerResult.canceled) {
+			return {
+				status: 'cancelled',
+				message: 'Image selection was cancelled',
+			};
+		}
+
+		const selectedImage = pickerResult.assets[0];
+
+		if (!saveLocally) {
+			// Return the temporary URI if not saving locally
+			return {
+				status: 'success',
+				message: 'Image selected successfully',
+				imageUri: selectedImage.uri,
+			};
+		}
+
+		// --- 3. Save image locally (if saveLocally is true) ---
+		const savedImagePath = await saveImageLocally(selectedImage.uri);
+		
+		if (!savedImagePath) {
+			return {
+				status: 'error',
+				message: 'Failed to save image locally',
+			};
+		}
+
+		return {
+			status: 'success',
+			message: 'Image uploaded and saved successfully',
+			imagePath: savedImagePath,
+			imageUri: selectedImage.uri,
+		};
+
+	} catch (error) {
+		console.error('Error in handleProfilePhotoUpload:', error);
+		return {
+			status: 'error',
+			message: 'An unexpected error occurred during image upload',
+		};
+	}
 }
 
-interface WorkSchedule {
-	periods: WorkSchedulePeriod[];
+/**
+ * Alternative method that opens the camera instead of image library
+ */
+export async function handleProfilePhotoCameraCapture(): Promise<ImageUploadResult> {
+	try {
+		// Request camera permissions
+		const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+		
+		if (permissionResult.status !== 'granted') {
+			return {
+				status: 'error',
+				message: 'Permission to access camera is required!',
+			};
+		}
+
+		// Launch camera
+		const cameraResult = await ImagePicker.launchCameraAsync({
+			allowsEditing: true,
+			aspect: [1, 1],
+			quality: 0.8,
+		});
+
+		if (cameraResult.canceled) {
+			return {
+				status: 'cancelled',
+				message: 'Camera capture was cancelled',
+			};
+		}
+
+		const capturedImage = cameraResult.assets[0];
+		const savedImagePath = await saveImageLocally(capturedImage.uri);
+
+		if (!savedImagePath) {
+			return {
+				status: 'error',
+				message: 'Failed to save captured image',
+			};
+		}
+
+		return {
+			status: 'success',
+			message: 'Photo captured and saved successfully',
+			imagePath: savedImagePath,
+			imageUri: capturedImage.uri,
+		};
+
+	} catch (error) {
+		console.error('Error in handleProfilePhotoCameraCapture:', error);
+		return {
+			status: 'error',
+			message: 'An unexpected error occurred during camera capture',
+		};
+	}
 }
+
+/**
+ * Saves an image from a URI to the app's document directory
+ * @param imageUri The temporary URI of the selected/captured image
+ * @returns The permanent local file path, or null if save failed
+ */
+async function saveImageLocally(imageUri: string): Promise<string | null> {
+	try {
+		// Create a unique filename
+		const timestamp = Date.now();
+		const fileName = `profile_photo_${timestamp}.jpg`;
+		
+		// Define the permanent file path
+		const permanentPath = `${FileSystem.documentDirectory}${fileName}`;
+		
+		// Copy the image from temporary location to permanent location
+		await FileSystem.copyAsync({
+			from: imageUri,
+			to: permanentPath,
+		});
+
+		return permanentPath;
+	} catch (error) {
+		console.error('Error saving image locally:', error);
+		return null;
+	}
+}
+
+/**
+ * Provides options for image selection (Library vs Camera)
+ * This can be used with an ActionSheet or Alert
+ */
+export function getImagePickerOptions() {
+	return [
+		{
+			title: 'Choose from Library',
+			handler: () => handleProfilePhotoUpload(),
+		},
+		{
+			title: 'Take Photo',
+			handler: () => handleProfilePhotoCameraCapture(),
+		},
+		{
+			title: 'Cancel',
+			style: 'cancel' as const,
+		},
+	];
+}
+
+
 
 /**
  * Signs up a new user, saves their details to the database, and updates the UserContext.
@@ -28,7 +200,7 @@ interface WorkSchedule {
  * @param password The user's plain-text password.
  * @param roles An array of strings for the user's roles/positions.
  * @param workSchedule A JavaScript object representing the user's work schedule.
- * @param path_to_icon The path to the user's icon (optional).
+ * @param avatar The path to the user's icon (optional).
  * @returns A promise that resolves to a Response object with status and message.
  */
 export async function signUpUser(
@@ -36,8 +208,8 @@ export async function signUpUser(
 	email: string,
 	password: string,
 	roles: string[],
-	workSchedule: WorkSchedule,
-	path_to_icon: string = "",
+	work_schedule: WorkSchedule,
+	avatar: string = "",
 	user_context: any
 ): Promise<Response> {
 	try {
@@ -59,12 +231,12 @@ export async function signUpUser(
 		}
 
 		// --- 3. Hash the password and serialize complex data ---
-		const password_hash = await getHash(password); // Placeholder for a secure hashing function
-		const roles_positions = JSON.stringify(roles);
-		const work_schedule = JSON.stringify(workSchedule);
+		const password_hash = await getHash(password);
+		const role = JSON.stringify(roles);
+		const workSchedule = JSON.stringify(work_schedule);
 
 		// --- 4. Create the user in the database ---
-		const newUserId = await createUser(name, email, password_hash, path_to_icon, roles_positions, work_schedule);
+		const newUserId = await createUser(name, email, password_hash, avatar, role, workSchedule);
 
 		if (newUserId === null) {
 			return {
@@ -74,14 +246,14 @@ export async function signUpUser(
 		}
 
 		// --- 5. Update the application-wide UserContext ---
-		// This is where we break SRP for practicality, but we keep the logic here
-		// to centralize the sign-up flow.
-		// const userContext = useUser();
 		const newUser: User = {
-			id: newUserId.toString(),
+			user_id: parseInt(newUserId.toString()),
 			name,
 			email,
-			// You can add more user data from the DB if needed
+			avatar,
+			password_hash,
+			role,
+			work_schedule: workSchedule,
 		};
 		user_context.login(newUser);
 
@@ -136,6 +308,12 @@ export async function loginUser(email: string, password: string, user_context: a
 		}
 
 		// --- 3. Compare the provided password with the stored hash ---
+		if (!user.password_hash) {
+			return {
+				status: "error",
+				message: "Error occured during login"
+			}
+		}
 		const passwordMatch = comparePassword(password, user.password_hash);
 		if (!passwordMatch) {
 			return {
@@ -147,9 +325,13 @@ export async function loginUser(email: string, password: string, user_context: a
 		// --- 4. Update the UserContext for a successful login ---
 		// const userContext = useUser();
 		const loggedInUser: User = {
-			id: user.user_id.toString(),
+			user_id: user.user_id,
 			name: user.name,
 			email: user.email,
+			role: user.role,
+			work_schedule: user.work_schedule,
+			password_hash: null,
+			avatar: user.avatar ,
 		};
 		user_context.login(loggedInUser);
 

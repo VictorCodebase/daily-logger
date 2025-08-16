@@ -3,11 +3,21 @@ export interface User {
     user_id: number;
     name: string;
     email: string;
-    password_hash: string;
-    path_to_icon: string | null;
-    roles_positions: string | null;
+    password_hash: string | null;
+    avatar: string | null;
+    role: string | null;
     work_schedule: string | null;
 }
+
+// export interface User {
+// 	id: string;
+// 	name: string;
+// 	email: string;
+// 	avatar?: string;
+// 	role?: string;
+// 	workSchedule?: string;
+// }
+
 
 export interface Day {
     day_id: number;
@@ -72,7 +82,31 @@ export interface WorkSchedulePeriod {
 	expected_time_out: string;
 }
 
+export interface WorkSchedule {
+	periods: WorkSchedulePeriod[];
+}
+
+export interface ImageUploadResult {
+	status: "success" | "error" | "cancelled";
+	message: string;
+	imagePath?: string;
+	imageUri?: string;
+}
+
+
 export interface KeyContribution {
 	title: string;
 	content: string;
+}
+
+export interface ExportOptions {
+	includeUserRoles: boolean;
+	includeWorkSchedule: boolean;
+	includeResponsibilitiesSummary: boolean;
+	includeKeyContributions: boolean;
+	includeSpecialActivities: boolean;
+	includeDailyLog: boolean;
+	includeConclusions: boolean;
+	outputFormat: "pdf" | "word";
+	documentFormat: "professional" | "monotone" | "simple" | "creative";
 }
