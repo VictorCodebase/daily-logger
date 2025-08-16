@@ -153,7 +153,7 @@ export async function loginUser(email: string, password: string, user_context: a
 			password_hash: user.password_hash,
 			avatar: user.avatar ,
 		};
-		// console.log("Logged in user: ", loggedInUser)
+		console.log("Logged in user: ", loggedInUser)
 		user_context.login(loggedInUser);
 
 		return {

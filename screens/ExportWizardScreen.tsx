@@ -94,7 +94,6 @@ export default function ExportPage() {
 
 		try {
 			const summary = await getResponsibilitiesSummary(user.user_id);
-			console.log("Summary: ", summary)
 			if (summary) {
 				setResponsibilitiesSummary(summary.content);
 				setExportOptions((prev) => ({ ...prev, includeResponsibilitiesSummary: true }));

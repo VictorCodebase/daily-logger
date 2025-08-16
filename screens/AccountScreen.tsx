@@ -21,7 +21,6 @@ import tw from "twrnc";
 export default function AccountScreen() {
 	const userContext = useUser();
 	const user = userContext.user;
-	console.log("User roles: ", user);
 
 	// State
 	const [formData, setFormData] = useState<AccountFormData>({
