@@ -54,3 +54,19 @@ export async function deleteDay(day_id: number): Promise<boolean> {
 		return false;
 	}
 }
+
+
+/**
+ * Deletes a log template from the database
+ */
+export async function deleteLogTemplate(templateId: number): Promise<boolean> {
+	try {
+		const db = await setupDatabase();
+		const sql = `DELETE FROM Log_Template WHERE log_template_id = ?;`;
+		const result = await db.runAsync(sql, [templateId]);
+		return result.changes > 0;
+	} catch (error) {
+		console.error("Error deleting log template:", error);
+		return false;
+	}
+}

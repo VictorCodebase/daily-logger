@@ -15,7 +15,8 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import tw from "twrnc";
-import { signUpUser, loginUser, handleProfilePhotoUpload, handleProfilePhotoCameraCapture, getImagePickerOptions } from "../stores/OnboardViewModel";
+import { signUpUser, loginUser } from "../stores/OnboardViewModel";
+import { getImagePickerOptions, handleProfilePhotoUpload, handleProfilePhotoCameraCapture } from "../utils/ImageUploadUtils";
 import WorkSchedulePeriodInput from "../components/OnboardComponents/WorkSchedulePeriodInput";
 import { WorkSchedulePeriod } from "../models/View_Models";
 import { useUser } from "../context/UserContext";
