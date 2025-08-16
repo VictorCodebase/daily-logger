@@ -1,5 +1,5 @@
 import setupDatabase from "./DatabaseService";
-import { User, Day, Activity, SpecialActivity, ResponsibilitiesSummary, LogTemplate, ExportTemplate } from "../models/ViewModel_Models";
+import { User, Day, Activity, SpecialActivity, ResponsibilitiesSummary, LogTemplate, ExportTemplate, DbUser } from "../models/ViewModel_Models";
 
 // --- EXISTENCE CHECK FUNCTIONS (return IDs or null) ---
 
@@ -74,11 +74,10 @@ export async function daySpecialActivitiesExist(day_id: number): Promise<number[
  */
 export async function responsibilitiesSummaryExists(user_id: number): Promise<number | null> {
 	try {
-		console.log("User id", user_id)
+		console.log("User id", user_id);
 		const db = await setupDatabase();
 		const result = await db.getFirstAsync<{ responsibilities_id: number }>(
-			`SELECT responsibilities_id FROM Responsibilities_Summary WHERE user_id = 2;`,
-			
+			`SELECT responsibilities_id FROM Responsibilities_Summary WHERE user_id = 2;`
 		);
 		return result?.responsibilities_id || null;
 	} catch (error) {
@@ -129,8 +128,23 @@ export async function exportTemplatesExist(): Promise<{ export_template_id: numb
 export async function readUser(user_id: number): Promise<User | null> {
 	try {
 		const db = await setupDatabase();
-		const result = await db.getFirstAsync<User>(`SELECT * FROM User WHERE user_id = ?;`, [user_id]);
-		return result || null;
+		const result = await db.getFirstAsync<DbUser>(`SELECT * FROM User WHERE user_id = ?;`, [user_id]);
+		console.log("Log result extracted: ", result);
+
+		if (result) {
+			const user: User = {
+				user_id: result.user_id,
+				name: result.name,
+				email: result.email,
+				password_hash: result.password_hash,
+				avatar: result.path_to_icon,
+				role: result.roles_positions,
+				work_schedule: result.work_schedule,
+			};
+			return user;
+		}
+
+		return null;
 	} catch (error) {
 		console.error("Error reading user:", error);
 		return null;
@@ -210,7 +224,7 @@ export async function readResponsibilitySummary(responsibilities_id: number): Pr
 		return result || null;
 	} catch (error) {
 		console.error("Error reading responsibility summary: ", error);
-		return null
+		return null;
 	}
 }
 
