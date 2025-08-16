@@ -8,6 +8,7 @@ import tw from "twrnc";
 import { useUser } from "../context/UserContext";
 import { colors } from "../themes/colors";
 import { ExportOptions, KeyContribution } from "../models/ViewModel_Models";
+import { DayInfo } from "../models/View_Models";
 
 // Import view model functions and types
 import { fetchActiveDays, getResponsibilitiesSummary, getDatesInRange, formatDate } from "../stores/ExportViewModel";
@@ -168,21 +169,44 @@ export default function ExportPage() {
 		return dateStr === endDate;
 	};
 
-	const handleDateSelect = (date: Date) => {
+	const handleDateSelect = (date: Date): void => {
 		const selectedDateStr = getFormattedDate(date);
 
-		if (!startDate || !endDate) {
-			// First selection
+		// If no dates selected, start new range
+		if (!startDate && !endDate) {
 			setStartDate(selectedDateStr);
 			setEndDate(selectedDateStr);
-		} else {
-			// Determine if this should be start or end
+			return;
+		}
+
+		// If only start date exists (shouldn't happen with current logic, but safety check)
+		if (startDate && !endDate) {
+			if (selectedDateStr >= startDate) {
+				setEndDate(selectedDateStr);
+			} else {
+				setEndDate(startDate);
+				setStartDate(selectedDateStr);
+			}
+			return;
+		}
+
+		// If we have a complete range
+		if (startDate && endDate) {
+			// If clicking on start or end, start fresh range from that point
+			if (selectedDateStr === startDate || selectedDateStr === endDate) {
+				setStartDate(selectedDateStr);
+				setEndDate(selectedDateStr);
+				return;
+			}
+
+			// If clicking outside current range, determine closest endpoint and extend
 			if (selectedDateStr < startDate) {
 				setStartDate(selectedDateStr);
 			} else if (selectedDateStr > endDate) {
 				setEndDate(selectedDateStr);
 			} else {
-				// If clicked date is between current range, make it the new end
+				// Clicking inside range - start new range from clicked date
+				setStartDate(selectedDateStr);
 				setEndDate(selectedDateStr);
 			}
 		}
@@ -309,6 +333,100 @@ export default function ExportPage() {
 		}
 	};
 
+	// Helper function to get all day information
+	const getDayInfo = (date: Date): DayInfo => {
+		const isActive = isActiveDay(date);
+		const isCurrentMonthDay = isCurrentMonth(date);
+		const isTodayDate = isToday(date);
+		const inRange = isInSelectedRange(date);
+		const isStart = isRangeStart(date);
+		const isEnd = isRangeEnd(date);
+
+		return {
+			isActive,
+			isCurrentMonth: isCurrentMonthDay,
+			isToday: isTodayDate,
+			inRange,
+			isStart,
+			isEnd,
+			backgroundColor: getBackgroundColor(isCurrentMonthDay, isActive, inRange, isStart, isEnd),
+			textColor: getTextColor(isCurrentMonthDay, isActive, inRange, isStart, isEnd),
+			borderStyle: getBorderStyle(inRange, isStart, isEnd, isTodayDate),
+		};
+	};
+
+	// Separate color logic for better maintainability
+	const getBackgroundColor = (isCurrentMonth: boolean, isActive: boolean, inRange: boolean, isStart: boolean, isEnd: boolean): string => {
+		if (!isCurrentMonth) {
+			return colors.surface.disabled;
+		}
+
+		if (isStart || isEnd) {
+			return colors.primary.main;
+		}
+
+		if (isActive) {
+			return colors.primary[100]; // Light blue for active days
+		}
+
+		return colors.surface.elevated; // Default background
+	};
+
+	const getTextColor = (isCurrentMonth: boolean, isActive: boolean, inRange: boolean, isStart: boolean, isEnd: boolean): string => {
+		if (!isCurrentMonth) {
+			return colors.text.tertiary;
+		}
+
+		if (isStart || isEnd) {
+			return colors.text.white;
+		}
+
+		return colors.text.primary;
+	};
+
+	const getBorderStyle = (inRange: boolean, isStart: boolean, isEnd: boolean, isToday: boolean) => {
+		if (isStart || isEnd) {
+			return {}; // No border needed, background color handles it
+		}
+
+		if (inRange) {
+			return {
+				borderWidth: 2,
+				borderColor: colors.primary.main,
+			};
+		}
+
+		if (isToday) {
+			return {
+				borderWidth: 2,
+				borderColor: colors.primary.main,
+			};
+		}
+
+		return {
+			borderWidth: 1,
+			borderColor: colors.border.primary,
+		};
+	};
+
+	const getDayStyle = (dayInfo: DayInfo) => {
+		const baseStyle = {
+			backgroundColor: dayInfo.backgroundColor,
+			...dayInfo.borderStyle,
+		};
+
+		return baseStyle;
+	};
+
+	const formatDisplayDate = (dateStr: string) => {
+		const date = new Date(dateStr + "T00:00:00");
+		return date.toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+		});
+	};
+
 	// Render calendar
 	const renderCalendar = () => {
 		const days = getDaysInMonth(currentDate);
@@ -333,9 +451,58 @@ export default function ExportPage() {
 					</TouchableOpacity>
 				</View>
 
+				{/* Range Selection Instructions */}
+				{(!startDate || !endDate || startDate === endDate) && (
+					<View style={tw`mb-3 p-3 rounded-lg bg-[${colors.primary[50]}] border border-[${colors.primary[200]}]`}>
+						<Text style={tw`text-sm text-[${colors.text.secondary}] text-center`}>
+							{!startDate
+								? "Tap a date to start selecting your range"
+								: startDate === endDate
+								? "Tap another date to complete your range"
+								: "Tap to adjust your date range"}
+						</Text>
+					</View>
+				)}
+
+				{/* Selected Range Display */}
+				{startDate && endDate && startDate !== endDate && (
+					<View style={tw`mb-3 p-3 rounded-lg bg-[${colors.primary[50]}] border border-[${colors.status.success}]`}>
+						<Text style={tw`text-sm text-[${colors.text.primary}] text-center font-medium`}>
+							Selected: {formatDisplayDate(startDate)} to {formatDisplayDate(endDate)}
+						</Text>
+						<TouchableOpacity
+							onPress={() => {
+								setStartDate("");
+								setEndDate("");
+							}}
+							style={tw`mt-2 self-center`}
+						>
+							<Text style={tw`text-xs text-[${colors.primary.main}] underline`}>Clear selection</Text>
+						</TouchableOpacity>
+					</View>
+				)}
+
+				{/* Legend */}
+				<View style={tw`flex-row justify-center mb-4 flex-wrap`}>
+					<View style={tw`flex-row items-center mr-4 mb-2`}>
+						<View style={tw`w-4 h-4 rounded bg-[${colors.primary[100]}] mr-2`} />
+						<Text style={tw`text-xs text-[${colors.text.secondary}]`}>Active Day</Text>
+					</View>
+					<View style={tw`flex-row items-center mr-4 mb-2`}>
+						<View
+							style={tw`w-4 h-4 rounded border-2 border-[${colors.primary.main}] bg-[${colors.background.primary}] mr-2`}
+						/>
+						<Text style={tw`text-xs text-[${colors.text.secondary}]`}>In Range</Text>
+					</View>
+					<View style={tw`flex-row items-center mb-2`}>
+						<View style={tw`w-4 h-4 rounded bg-[${colors.primary.main}] mr-2`} />
+						<Text style={tw`text-xs text-[${colors.text.secondary}]`}>Range Start/End</Text>
+					</View>
+				</View>
+
 				{/* Days of week header */}
 				<View style={tw`flex-row mb-2`}>
-					{DAYS_OF_WEEK.map((day) => (
+					{DAYS_OF_WEEK.map((day: string) => (
 						<View key={day} style={tw`flex-1 p-2`}>
 							<Text style={tw`text-center text-sm font-medium text-[${colors.text.secondary}]`}>{day}</Text>
 						</View>
@@ -344,48 +511,33 @@ export default function ExportPage() {
 
 				{/* Calendar grid */}
 				<View>
-					{Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => (
+					{Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex: number) => (
 						<View key={weekIndex} style={tw`flex-row`}>
-							{days.slice(weekIndex * 7, (weekIndex + 1) * 7).map((date, dayIndex) => {
-								const isActive = isActiveDay(date);
-								const isCurrentMonthDay = isCurrentMonth(date);
-								const isTodayDate = isToday(date);
-								const inRange = isInSelectedRange(date);
-								const isStart = isRangeStart(date);
-								const isEnd = isRangeEnd(date);
-
-								let backgroundColor = colors.surface.disabled;
-								let textColor = colors.text.tertiary;
-
-								if (isCurrentMonthDay) {
-									if (isStart || isEnd) {
-										backgroundColor = colors.primary.main;
-										textColor = colors.text.white;
-									} else if (inRange) {
-										backgroundColor = colors.primary[100];
-										textColor = colors.text.primary;
-									} else if (isActive) {
-										backgroundColor = colors.primary[50];
-										textColor = colors.text.primary;
-									} else {
-										backgroundColor = colors.surface.elevated;
-										textColor = colors.text.primary;
-									}
-								}
-
+							{days.slice(weekIndex * 7, (weekIndex + 1) * 7).map((date: Date, dayIndex: number) => {
+								const dayInfo = getDayInfo(date);
 								return (
 									<TouchableOpacity
 										key={dayIndex}
-										style={tw`flex-1 aspect-square p-1 m-0.5 rounded-lg bg-[${backgroundColor}] ${
-											isTodayDate && !inRange
-												? `border-2 border-[${colors.primary.main}]`
-												: `border border-[${colors.border.primary}]`
-										}`}
+										style={[tw`flex-1 aspect-square p-1 m-0.5 rounded-lg`, getDayStyle(dayInfo)]}
 										onPress={() => handleDateSelect(date)}
-										disabled={!isCurrentMonthDay}
+										disabled={!dayInfo.isCurrentMonth}
 									>
-										<View style={tw`flex-1 justify-center items-center`}>
-											<Text style={tw`text-sm font-medium text-[${textColor}]`}>
+										<View style={tw`flex-1 justify-center items-center relative`}>
+											{/* Active day indicator dot */}
+											{dayInfo.isActive && dayInfo.isCurrentMonth && (
+												<View
+													style={tw`absolute top-1 right-1 w-2 h-2 rounded-full bg-[${colors.primary.dark}]`}
+												/>
+											)}
+
+											{/* Today indicator */}
+											{dayInfo.isToday && !dayInfo.inRange && (
+												<View
+													style={tw`absolute inset-0 rounded-lg border-2 border-[${colors.status.warning}]`}
+												/>
+											)}
+
+											<Text style={[tw`text-sm font-medium`, { color: dayInfo.textColor }]}>
 												{date.getDate()}
 											</Text>
 										</View>
