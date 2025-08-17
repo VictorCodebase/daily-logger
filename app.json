@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "daily-logger",
-    "slug": "daily-logger",
+    "name": "Activity Logger",
+    "slug": "activity-logger",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon_new.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {

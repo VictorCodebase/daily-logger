@@ -5,7 +5,7 @@ import tw from "twrnc";
 import { workLog } from "../utils/demoLog";
 import { getFormattedDate, getFormattedTime } from "../utils/DateFormatUtil";
 import { getAllTables, logTableContents, resetTable } from "../services/DatabaseDevService";
-import { saveActivities } from "../stores/devViewModel"; // Adjust the import path to your actual service
+import { saveActivities } from "../stores/DevViewModel"; // Adjust the import path to your actual service
 
 //! DevViewModel interfaces
 interface RawActivity {
