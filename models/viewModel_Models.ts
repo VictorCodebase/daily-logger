@@ -9,6 +9,16 @@ export interface User {
     work_schedule: string | null;
 }
 
+export interface DbUser {
+	user_id: number;
+	name: string;
+	email: string;
+	password_hash: string | null;
+	path_to_icon: string | null;
+	roles_positions: string | null;
+	work_schedule: string | null;
+}
+
 // export interface User {
 // 	id: string;
 // 	name: string;

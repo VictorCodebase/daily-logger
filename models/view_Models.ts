@@ -17,3 +17,19 @@ export interface WorkSchedulePeriod {
 	expected_time_in: string;
 	expected_time_out: string;
 }
+
+export interface DayInfo {
+	isActive: boolean;
+	isCurrentMonth: boolean;
+	isToday: boolean;
+	inRange: boolean;
+	isStart: boolean;
+	isEnd: boolean;
+	backgroundColor: string;
+	textColor: string;
+	borderStyle: {
+		borderWidth?: number;
+		borderColor?: string;
+		backgroundColor?: string;
+	};
+}
