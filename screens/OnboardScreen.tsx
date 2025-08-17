@@ -195,7 +195,7 @@ export default function LoginSignupScreen() {
 							<Image source={require("../assets/touch-icon-512x512.png")} style={{ width: 100, height: 100 }} />
 						</View>
 						<Text style={tw`text-3xl font-bold text-[${colors.text.primary}]`}>Welcome</Text>
-						<Text style={tw`text-lg text-[${colors.text.secondary}]`}>
+						<Text style={tw`text-center text-lg text-[${colors.text.secondary}] w-[70] pt-2`}>
 							{isLogin ? "Sign in to your Mbwaa Media Activity Logger" : "Set up your Mbwaa media Activity logger Account"}
 						</Text>
 					</View>
