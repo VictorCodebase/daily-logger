@@ -129,7 +129,7 @@ export async function readUser(user_id: number): Promise<User | null> {
 	try {
 		const db = await setupDatabase();
 		const result = await db.getFirstAsync<DbUser>(`SELECT * FROM User WHERE user_id = ?;`, [user_id]);
-		console.log("Log result extracted: ", result);
+		// console.log("Log result extracted: ", result);
 
 		if (result) {
 			const user: User = {

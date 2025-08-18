@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, SafeAreaView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -13,6 +13,7 @@ import { DayInfo } from "../models/View_Models";
 // Import view model functions and types
 import { fetchActiveDays, getResponsibilitiesSummary, getDatesInRange, formatDate } from "../stores/ExportViewModel";
 import { generateReport } from "../utils/fileUtils";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Calendar constants
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -61,21 +62,19 @@ export default function ExportPage() {
 		const oneMonthEarlier = new Date();
 		oneMonthEarlier.setMonth(today.getMonth() - 1);
 
-		const todayString = today.toISOString().slice(0, 10);
-		const startString = oneMonthEarlier.toISOString().slice(0, 10);
-
-		// setEndDate(todayString);
-		// setStartDate(startString);
-		// setCurrentDate(oneMonthEarlier); // Set calendar to show start month
 	}, []);
 
 	// Load active days and responsibilities summary
 	useEffect(() => {
-		loadActiveDays();
 		if (user?.user_id) {
 			loadResponsibilitiesSummary();
 		}
 	}, [user]);
+	useFocusEffect(
+		useCallback(() => {
+			loadActiveDays();
+		}, [])
+	);
 
 	const loadActiveDays = async () => {
 		try {
