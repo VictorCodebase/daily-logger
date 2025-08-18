@@ -7,7 +7,6 @@ import { Feather } from "@expo/vector-icons";
 
 import { colors } from "../../themes/colors";
 import { getFormattedTime } from "../../utils/DateFormatUtil";
-import { Activity } from "../../models/ViewModel_Models";
 import { RawActivity } from "../../models/View_Models";
 
 interface ActivityBlockProps {

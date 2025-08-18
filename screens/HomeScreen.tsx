@@ -93,7 +93,6 @@ const HomeScreen: React.FC = () => {
 		setActivities([{ content: "", category: "", time_start: "", time_end: "" }]);
 		setSpecialActivities([]);
 		setAppliedTemplate(null);
-		Alert.alert("Template Unapplied", "All fields have been reset.");
 	};
 
 	// --- Activity Management Logic ---
@@ -280,14 +279,14 @@ const HomeScreen: React.FC = () => {
 				</TouchableOpacity>
 
 				{/* Preview Button */}
-				<View style={tw`mt-8 px-4`}>
+				{/* <View style={tw`mt-8 px-4`}>
 					<TouchableOpacity
 						style={tw`flex-row items-center justify-center py-3 bg-[${colors.background.secondary}] border border-[${colors.border.primary}] rounded-xl`}
 					>
 						<Feather name="eye" size={18} color={colors.text.secondary} />
 						<Text style={tw`ml-2 text-[${colors.text.secondary}] font-medium`}>Preview</Text>
 					</TouchableOpacity>
-				</View>
+				</View> */}
 			</ScrollView>
 
 			{/* Bottom Actions */}

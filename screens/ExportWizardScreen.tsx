@@ -64,9 +64,9 @@ export default function ExportPage() {
 		const todayString = today.toISOString().slice(0, 10);
 		const startString = oneMonthEarlier.toISOString().slice(0, 10);
 
-		setEndDate(todayString);
-		setStartDate(startString);
-		setCurrentDate(oneMonthEarlier); // Set calendar to show start month
+		// setEndDate(todayString);
+		// setStartDate(startString);
+		// setCurrentDate(oneMonthEarlier); // Set calendar to show start month
 	}, []);
 
 	// Load active days and responsibilities summary
@@ -151,7 +151,7 @@ export default function ExportPage() {
 	const isToday = (date: Date): boolean => {
 		const today = new Date();
 		return date.toDateString() === today.toDateString();
-	};
+	};``
 
 	const isInSelectedRange = (date: Date): boolean => {
 		if (!startDate || !endDate) return false;

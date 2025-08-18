@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Modal, SafeAreaView, ActivityIndicator, Alert } from "react-native";
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
@@ -10,6 +10,7 @@ import { ActivityBlock } from "../components/homeComponents/ActivityBlock";
 import { SpecialActivityBlock } from "../components/homeComponents/SpecialActivityBlock";
 import { fetchActiveDays, fetchDay, saveDayChanges } from "../stores/CalendarViewModel";
 import { Day, Activity, SpecialActivity, DayDetails } from "../models/ViewModel_Models";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface ActiveDay {
 	day_id: number;
@@ -45,9 +46,11 @@ export default function CalendarPage() {
 	const [deletedActivityIds, setDeletedActivityIds] = useState<number[]>([]);
 	const [deletedSpecialActivityIds, setDeletedSpecialActivityIds] = useState<number[]>([]);
 
-	useEffect(() => {
-		loadActiveDays();
-	}, []);
+	useFocusEffect(
+		useCallback(() => {
+			loadActiveDays();
+		}, [])
+	);
 
 	const loadActiveDays = async () => {
 		try {
