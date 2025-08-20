@@ -261,7 +261,7 @@ export default function AccountScreen() {
 					)}
 
 					{/* Header */}
-					<View style={tw`pt-15`}>
+					<View style={tw`pt-10 pb-5`}>
 						<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>Account Settings</Text>
 						<Text style={tw`text-sm text-[${colors.text.secondary}]`}>{user?.name}'s Account</Text>
 					</View>

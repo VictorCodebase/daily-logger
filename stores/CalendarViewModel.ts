@@ -126,3 +126,13 @@ export async function saveDayChanges({
 		return false;
 	}
 }
+
+export async function deleteDays(dayIds: number[]) {
+	for (const dayid of dayIds) {
+		try {
+			await deleteDay(dayid)
+		} catch {
+			console.error("Error deleting day: ", dayid);
+		}
+	}
+}

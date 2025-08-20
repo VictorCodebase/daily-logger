@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Modal, SafeAreaView, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, SafeAreaView, ActivityIndicator, Alert, TouchableWithoutFeedback } from "react-native";
 import tw from "twrnc";
 import { Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -8,7 +8,7 @@ import { getFormattedDate, getFormattedTime } from "../utils/DateFormatUtil";
 import { DaySection } from "../components/homeComponents/DaySection";
 import { ActivityBlock } from "../components/homeComponents/ActivityBlock";
 import { SpecialActivityBlock } from "../components/homeComponents/SpecialActivityBlock";
-import { fetchActiveDays, fetchDay, saveDayChanges } from "../stores/CalendarViewModel";
+import { deleteDays, fetchActiveDays, fetchDay, saveDayChanges } from "../stores/CalendarViewModel";
 import { Day, Activity, SpecialActivity, DayDetails } from "../models/ViewModel_Models";
 import { useFocusEffect } from "@react-navigation/native";
 import { useUser } from "../context/UserContext";
@@ -33,6 +33,8 @@ export default function CalendarPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSaving, setIsSaving] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [isSelectionMode, setIsSelectionMode] = useState(false);
+	const [selectedDayIds, setSelectedDayIds] = useState<number[]>([]);
 
 	// Modal state
 	const [dayDetails, setDayDetails] = useState<DayDetails | null>(null);
@@ -65,6 +67,118 @@ export default function CalendarPage() {
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	const enterSelectionMode = (dayId: number) => {
+		setIsSelectionMode(true);
+		setSelectedDayIds([dayId]);
+	};
+
+	const exitSelectionMode = () => {
+		setIsSelectionMode(false);
+		setSelectedDayIds([]);
+	};
+
+	const toggleDaySelection = (dayId: number) => {
+		if (selectedDayIds.includes(dayId)) {
+			setSelectedDayIds((prev) => prev.filter((id) => id !== dayId));
+		} else {
+			setSelectedDayIds((prev) => [...prev, dayId]);
+		}
+	};
+
+	const handleLongPress = (date: Date) => {
+		const dayId = isActiveDay(date);
+		if (dayId) {
+			enterSelectionMode(dayId);
+		}
+	};
+
+	const handleDayPress = (date: Date) => {
+		if (isSelectionMode) {
+			const dayId = isActiveDay(date);
+			if (dayId) {
+				toggleDaySelection(dayId);
+			}
+		} else {
+			openDayModal(date);
+		}
+	};
+
+	const confirmDeleteDays = () => {
+		if (selectedDayIds.length === 0) return;
+
+		const dayCount = selectedDayIds.length;
+		const message =
+			dayCount === 1
+				? "Are you sure you want to delete this day and all its activities?"
+				: `Are you sure you want to delete these ${dayCount} days and all their activities?`;
+
+		Alert.alert("Confirm Deletion", message, [
+			{
+				text: "Cancel",
+				style: "cancel",
+			},
+			{
+				text: "Delete",
+				style: "destructive",
+				onPress: handleDeleteSelectedDays,
+			},
+		]);
+	};
+
+	const handleDeleteSelectedDays = async () => {
+		try {
+			setIsLoading(true);
+			await deleteDays(selectedDayIds);
+
+			// Remove deleted days from activeDays state
+			setActiveDays((prev) => prev.filter((day) => !selectedDayIds.includes(day.day_id)));
+
+			exitSelectionMode();
+		} catch (error) {
+			console.error("Error deleting days:", error);
+			Alert.alert("Error", "Failed to delete selected days. Please try again.");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const renderSelectionActionBar = () => {
+		if (!isSelectionMode) return null;
+
+		return (
+			<View
+				style={tw`absolute bottom-0 left-0 right-0 bg-[${colors.background.card}] border-t border-[${colors.border.primary}] px-4 py-3 shadow-lg`}
+			>
+				<View style={tw`flex-row items-center justify-between`}>
+					<Text style={tw`text-sm text-[${colors.text.secondary}]`}>
+						{selectedDayIds.length} day{selectedDayIds.length !== 1 ? "s" : ""} selected
+					</Text>
+
+					<View style={tw`flex-row gap-3`}>
+						<TouchableOpacity
+							style={tw`px-4 py-2 rounded-lg border border-[${colors.border.primary}]`}
+							onPress={exitSelectionMode}
+						>
+							<Text style={tw`text-[${colors.text.primary}] font-medium`}>Cancel</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity
+							style={tw`px-4 py-2 rounded-lg ${
+								selectedDayIds.length > 0 ? `bg-[${colors.status.error}]` : `bg-[${colors.surface.disabled}]`
+							}`}
+							onPress={confirmDeleteDays}
+							disabled={selectedDayIds.length === 0}
+						>
+							<Text style={tw`text-white font-medium`}>
+								Delete {selectedDayIds.length > 0 ? `(${selectedDayIds.length})` : ""}
+							</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</View>
+		);
 	};
 
 	const getDaysInMonth = (date: Date): Date[] => {
@@ -287,57 +401,88 @@ export default function CalendarPage() {
 		const days = getDaysInMonth(currentDate);
 
 		return (
-			<View style={tw`px-4`}>
-				{/* Days of week header */}
-				<View style={tw`flex-row mb-2`}>
-					{DAYS_OF_WEEK.map((day) => (
-						<View key={day} style={tw`flex-1 p-2`}>
-							<Text style={tw`text-center text-sm font-medium text-[${colors.text.secondary}]`}>{day}</Text>
-						</View>
-					))}
-				</View>
+			<TouchableWithoutFeedback onPress={isSelectionMode ? exitSelectionMode : undefined}>
+				<View style={tw`px-4`}>
+					{/* Days of week header */}
+					<View style={tw`flex-row mb-2`}>
+						{DAYS_OF_WEEK.map((day) => (
+							<View key={day} style={tw`flex-1 p-2`}>
+								<Text style={tw`text-center text-sm font-medium text-[${colors.text.secondary}]`}>{day}</Text>
+							</View>
+						))}
+					</View>
 
-				{/* Calendar grid */}
-				<View>
-					{Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => (
-						<View key={weekIndex} style={tw`flex-row`}>
-							{days.slice(weekIndex * 7, (weekIndex + 1) * 7).map((date, dayIndex) => {
-								const dayId = isActiveDay(date);
-								const isCurrentMonthDay = isCurrentMonth(date);
-								const isTodayDate = isToday(date);
+					{/* Calendar grid */}
+					<View>
+						{Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => (
+							<View key={weekIndex} style={tw`flex-row`}>
+								{days.slice(weekIndex * 7, (weekIndex + 1) * 7).map((date, dayIndex) => {
+									const dayId = isActiveDay(date);
+									const isCurrentMonthDay = isCurrentMonth(date);
+									const isTodayDate = isToday(date);
+									const isSelected = dayId ? selectedDayIds.includes(dayId) : false;
 
-								return (
-									<TouchableOpacity
-										key={dayIndex}
-										style={tw`flex-1 aspect-square p-1 m-0.5 rounded-lg ${
-											dayId
-												? `bg-[${colors.primary.main}]`
-												: isCurrentMonthDay
-												? `bg-[${colors.surface.elevated}] border border-[${colors.border.primary}]`
-												: `bg-[${colors.surface.disabled}]`
-										} ${isTodayDate && !dayId ? `border-2 border-[${colors.primary.main}]` : ""}`}
-										onPress={() => openDayModal(date)}
-									>
-										<View style={tw`flex-1 justify-center items-center`}>
-											<Text
-												style={tw`text-sm font-medium ${
-													dayId
-														? `text-[${colors.text.white}]`
-														: isCurrentMonthDay
-														? `text-[${colors.text.primary}]`
-														: `text-[${colors.text.tertiary}]`
-												}`}
-											>
-												{date.getDate()}
-											</Text>
-										</View>
-									</TouchableOpacity>
-								);
-							})}
-						</View>
-					))}
+									return (
+										<TouchableOpacity
+											key={dayIndex}
+											style={tw`flex-1 aspect-square p-1 m-0.5 rounded-lg ${
+												dayId
+													? isSelected
+														? `bg-[${colors.primary.dark}] border-2 border-[${colors.primary.main}]`
+														: `bg-[${colors.primary.main}]`
+													: isCurrentMonthDay
+													? `bg-[${colors.surface.elevated}] border border-[${colors.border.primary}]`
+													: `bg-[${colors.surface.disabled}]`
+											} ${
+												isTodayDate && !dayId
+													? `border-2 border-[${colors.primary.main}]`
+													: ""
+											}`}
+											onPress={() => handleDayPress(date)}
+											onLongPress={() => handleLongPress(date)}
+											disabled={!isCurrentMonthDay}
+										>
+											<View style={tw`flex-1 justify-center items-center relative`}>
+												<Text
+													style={tw`text-sm font-medium ${
+														dayId
+															? `text-[${colors.text.white}]`
+															: isCurrentMonthDay
+															? `text-[${colors.text.primary}]`
+															: `text-[${colors.text.tertiary}]`
+													}`}
+												>
+													{date.getDate()}
+												</Text>
+
+												{/* Checkbox for selection mode */}
+												{isSelectionMode && dayId && (
+													<View style={tw`absolute -top-1 -right-1`}>
+														<View
+															style={tw`w-5 h-5 rounded-full border-2 border-white bg-white items-center justify-center`}
+														>
+															{isSelected && (
+																<Feather
+																	name="check"
+																	size={12}
+																	color={
+																		colors.primary
+																			.main
+																	}
+																/>
+															)}
+														</View>
+													</View>
+												)}
+											</View>
+										</TouchableOpacity>
+									);
+								})}
+							</View>
+						))}
+					</View>
 				</View>
-			</View>
+			</TouchableWithoutFeedback>
 		);
 	};
 
@@ -345,39 +490,71 @@ export default function CalendarPage() {
 		const days = getDaysInMonth(currentDate).filter((date) => isCurrentMonth(date));
 
 		return (
-			<ScrollView style={tw`px-4`}>
-				{days.map((date, index) => {
-					const dayId = isActiveDay(date);
-					const isTodayDate = isToday(date);
+			<TouchableWithoutFeedback onPress={isSelectionMode ? exitSelectionMode : undefined}>
+				<ScrollView style={tw`px-4`}>
+					{days.map((date, index) => {
+						const dayId = isActiveDay(date);
+						const isTodayDate = isToday(date);
+						const isSelected = dayId ? selectedDayIds.includes(dayId) : false;
 
-					return (
-						<TouchableOpacity
-							key={index}
-							style={tw`flex-row items-center justify-between p-4 mb-2 rounded-xl ${
-								dayId
-									? `bg-[${colors.primary}] border border-[${colors.primary.main}]`
-									: `bg-[${colors.surface.elevated}] border border-[${colors.border.primary}]`
-							} ${isTodayDate && !dayId ? `border-2 border-[${colors.primary.main}]` : ""}`}
-							onPress={() => openDayModal(date)}
-						>
-							<View>
-								<Text style={tw`text-lg font-semibold text-[${colors.text.primary}]`}>
-									{date.getDate()} {MONTHS[date.getMonth()].slice(0, 3)}
-								</Text>
-								<Text style={tw`text-sm text-[${colors.text.secondary}]`}>{DAYS_OF_WEEK[date.getDay()]}</Text>
-							</View>
-							<View style={tw`flex-row items-center`}>
-								{dayId && <View style={tw`w-3 h-3 rounded-full bg-[${colors.primary.main}] mr-2`} />}
-								<Feather
-									name="chevron-right"
-									size={20}
-									color={dayId ? colors.primary.main : colors.text.secondary}
-								/>
-							</View>
-						</TouchableOpacity>
-					);
-				})}
-			</ScrollView>
+						return (
+							<TouchableOpacity
+								key={index}
+								style={tw`flex-row items-center justify-between p-4 mb-2 rounded-xl ${
+									dayId
+										? isSelected
+											? `bg-[${colors.primary.dark}] border-2 border-[${colors.primary.main}]`
+											: `bg-[${colors.primary.light}] border border-[${colors.primary.main}]`
+										: `bg-[${colors.surface.elevated}] border border-[${colors.border.primary}]`
+								} ${isTodayDate && !dayId ? `border-2 border-[${colors.primary.main}]` : ""}`}
+								onPress={() => handleDayPress(date)}
+								onLongPress={() => handleLongPress(date)}
+							>
+								<View style={tw`flex-row items-center flex-1`}>
+									{/* Checkbox for selection mode */}
+									{isSelectionMode && dayId && (
+										<View style={tw`mr-3`}>
+											<View
+												style={tw`w-6 h-6 rounded-full border-2 border-[${colors.border.primary}] bg-white items-center justify-center`}
+											>
+												{isSelected && (
+													<Feather
+														name="check"
+														size={14}
+														color={colors.primary.main}
+													/>
+												)}
+											</View>
+										</View>
+									)}
+
+									<View>
+										<Text style={tw`text-lg font-semibold text-[${colors.text.primary}]`}>
+											{date.getDate()} {MONTHS[date.getMonth()].slice(0, 3)}
+										</Text>
+										<Text style={tw`text-sm text-[${colors.text.secondary}]`}>
+											{DAYS_OF_WEEK[date.getDay()]}
+										</Text>
+									</View>
+								</View>
+
+								<View style={tw`flex-row items-center`}>
+									{dayId && !isSelectionMode && (
+										<View style={tw`w-3 h-3 rounded-full bg-[${colors.primary.main}] mr-2`} />
+									)}
+									{!isSelectionMode && (
+										<Feather
+											name="chevron-right"
+											size={20}
+											color={dayId ? colors.primary.main : colors.text.secondary}
+										/>
+									)}
+								</View>
+							</TouchableOpacity>
+						);
+					})}
+				</ScrollView>
+			</TouchableWithoutFeedback>
 		);
 	};
 
@@ -459,6 +636,9 @@ export default function CalendarPage() {
 
 			{/* Date Picker */}
 			{showDatePicker && <DateTimePicker value={currentDate} mode="date" display="default" onChange={onDatePickerChange} />}
+
+			{/* Selection mode action bar */}
+			{renderSelectionActionBar()}
 
 			{/* Modal */}
 			<Modal visible={showModal} animationType="slide" presentationStyle="fullScreen">
