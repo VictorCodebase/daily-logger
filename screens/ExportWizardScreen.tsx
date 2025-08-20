@@ -80,6 +80,7 @@ export default function ExportPage() {
 		try {
 			setIsLoading(true);
 			const days = await fetchActiveDays();
+			console.log("Active days: ", activeDays)
 			setActiveDays(days || []);
 		} catch (error) {
 			console.error("Error loading active days:", error);

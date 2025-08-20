@@ -11,6 +11,7 @@ import { SpecialActivityBlock } from "../components/homeComponents/SpecialActivi
 import { fetchActiveDays, fetchDay, saveDayChanges } from "../stores/CalendarViewModel";
 import { Day, Activity, SpecialActivity, DayDetails } from "../models/ViewModel_Models";
 import { useFocusEffect } from "@react-navigation/native";
+import { useUser } from "../context/UserContext";
 
 interface ActiveDay {
 	day_id: number;
@@ -45,6 +46,7 @@ export default function CalendarPage() {
 	const [modalSpecialActivities, setModalSpecialActivities] = useState<SpecialActivity[]>([]);
 	const [deletedActivityIds, setDeletedActivityIds] = useState<number[]>([]);
 	const [deletedSpecialActivityIds, setDeletedSpecialActivityIds] = useState<number[]>([]);
+	const { user, isLoggedIn } = useUser();
 
 	useFocusEffect(
 		useCallback(() => {
@@ -389,8 +391,8 @@ export default function CalendarPage() {
 
 			{/* Header */}
 			<View style={tw`p-6 pt-15`}>
-				<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Welcom back</Text>
-				<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>Your Calendar</Text>
+				{isLoggedIn && user && <Text style={tw`text-sm text-[${colors.text.secondary}]`}>{user.name}'s</Text>}
+				<Text style={tw`text-4xl font-bold text-[${colors.text.primary}]`}>Calendar</Text>
 				<Text style={tw`text-sm text-[${colors.text.secondary}]`}>Track your daily activities</Text>
 			</View>
 
