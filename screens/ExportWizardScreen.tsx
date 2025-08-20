@@ -24,6 +24,10 @@ interface ActiveDay {
 	date: string;
 }
 
+// 		Error checking responsibilities summary existence: [Error: Call to function 'NativeDatabase.prepareAsync' has been rejected.
+// → Caused by: The 1st argument cannot be cast to type expo.modules.sqlite.NativeDatabase (received class java.lang.Integer)
+// → Caused by: Cannot use shared object that was already released]
+
 export default function ExportPage() {
 	const { user } = useUser();
 	const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +60,7 @@ export default function ExportPage() {
 		documentFormat: "professional",
 	});
 
-	// Initialize default dates (end = today, start = one month earlier)
+	
 	useEffect(() => {
 		const today = new Date();
 		const oneMonthEarlier = new Date();
@@ -77,11 +81,13 @@ export default function ExportPage() {
 	);
 
 	const loadActiveDays = async () => {
+
 		try {
 			setIsLoading(true);
 			const days = await fetchActiveDays();
-			console.log("Active days: ", activeDays)
 			setActiveDays(days || []);
+			console.log("Active days: ", activeDays);
+
 		} catch (error) {
 			console.error("Error loading active days:", error);
 			setErrorMessage("Failed to load calendar data");
@@ -106,7 +112,10 @@ export default function ExportPage() {
 
 	// Helper functions
 	const getFormattedDate = (date: Date): string => {
-		return date.toISOString().slice(0, 10);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+		return `${year}-${month}-${day}`;
 	};
 
 	const getDaysInMonth = (date: Date): Date[] => {
