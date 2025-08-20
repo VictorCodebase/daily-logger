@@ -74,7 +74,7 @@ export async function daySpecialActivitiesExist(day_id: number): Promise<number[
  */
 export async function responsibilitiesSummaryExists(user_id: number): Promise<number | null> {
 	try {
-		console.log("User id", user_id);
+		// console.log("User id", user_id);
 		const db = await setupDatabase();
 		const result = await db.getFirstAsync<{ responsibilities_id: number }>(
 			`SELECT responsibilities_id FROM Responsibilities_Summary WHERE user_id = 2;`

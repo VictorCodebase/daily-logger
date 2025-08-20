@@ -33,7 +33,7 @@ export interface TemplateItem {
 async function getResponsibilitiesSummary(user_id: number): Promise<ResponsibilitiesSummary | null> {
 	try {
 		const summaryId = await responsibilitiesSummaryExists(user_id);
-		console.log("summary id: ", summaryId);
+		// console.log("summsummary idary id: ", summaryId);
 		if (summaryId) {
 			return await readResponsibilitySummary(summaryId);
 		}
