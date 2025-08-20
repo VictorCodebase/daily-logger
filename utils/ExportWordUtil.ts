@@ -3,12 +3,26 @@ import { ReportData } from "../stores/ExportViewModel";
 import { ExportOptions } from "../models/ViewModel_Models";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import { formatHumanFriendlyDate } from "./DateFormatUtil";
 
-
+/**
+ * Generates and saves a Word document as a Base64 string for mobile platforms.
+ *
+ * @param reportData The data to be included in the report.
+ * @param exportOptions The options for which sections to include in the report.
+ * @param fileName The desired name of the output file.
+ * @returns A Promise that resolves when the document is successfully generated and shared.
+ */
 export const generateWordDocument = async (reportData: ReportData, exportOptions: ExportOptions, fileName: string): Promise<string> => {
 	try {
 		// Create document sections based on export options
 		const sections: Paragraph[] = [];
+		let userRoles: string[] = [];
+
+		if (reportData.userRoles) {
+			userRoles = JSON.parse(reportData.userRoles);
+            console.log("User roles: ", userRoles)
+		}
 
 		// Title
 		sections.push(
@@ -28,21 +42,32 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 		);
 
 		// User Roles (Position)
-		if (exportOptions.includeUserRoles && reportData.userRoles) {
+		if (exportOptions.includeUserRoles && userRoles.length > 0) {
 			sections.push(
 				new Paragraph({
 					children: [
 						new TextRun({
-							text: "Position: ",
+							text: "Position(s): ",
 							bold: true,
 						}),
-						new TextRun({
-							text: reportData.userRoles,
-						}),
 					],
-					spacing: { after: 200 },
+					spacing: { after: 100 },
 				})
 			);
+			// Iterate over the array of user roles
+			userRoles.forEach((role) => {
+				sections.push(
+					new Paragraph({
+						children: [
+							new TextRun({
+								text: `- ${role}`,
+							}),
+						],
+						spacing: { after: 100 },
+						indent: { left: 360 },
+					})
+				);
+			});
 		}
 
 		// Reporting Period
@@ -80,7 +105,6 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 				sections.push(
 					new Paragraph({
 						children: [
-							// Use the new WorkSchedulePeriod properties
 							new TextRun({
 								text: `From: ${schedule.start} to ${schedule.end}, Time In: ${schedule.expected_time_in}, Time Out: ${schedule.expected_time_out}`,
 							}),
@@ -151,7 +175,6 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 				sections.push(
 					new Paragraph({
 						children: [
-							// Use the new KeyContribution property 'content' instead of 'description'
 							new TextRun({
 								text: contribution.content,
 							}),
@@ -178,24 +201,25 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 					spacing: { before: 400, after: 200 },
 				})
 			);
-			reportData.detailedDailyLog.forEach((day) => {
-				sections.push(
-					new Paragraph({
-						children: [
-							// Use the new DayDetails property 'day' instead of 'date'
-							new TextRun({
-								text: day.day?.date ?? undefined,
-								bold: true,
-								size: 22,
-							}),
-						],
-						heading: HeadingLevel.HEADING_2,
-						spacing: { before: 300, after: 100 },
-					})
-				);
+			reportData.detailedDailyLog.forEach((dayDetails) => {
+				if (dayDetails.day) {
+					sections.push(
+						new Paragraph({
+							children: [
+								new TextRun({
+									// Format the date to be human-friendly
+									text: formatHumanFriendlyDate(dayDetails.day.date),
+									bold: true,
+									size: 22,
+								}),
+							],
+							heading: HeadingLevel.HEADING_2,
+							spacing: { before: 300, after: 100 },
+						})
+					);
+				}
 
-				// Check for special activities and list them
-				if (exportOptions.includeSpecialActivities && day.specialActivities && day.specialActivities.length > 0) {
+				if (exportOptions.includeSpecialActivities && dayDetails.specialActivities && dayDetails.specialActivities.length > 0) {
 					sections.push(
 						new Paragraph({
 							children: [
@@ -207,12 +231,13 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 							spacing: { after: 100 },
 						})
 					);
-					day.specialActivities.forEach((activity) => {
+					dayDetails.specialActivities.forEach((activity) => {
 						sections.push(
 							new Paragraph({
 								children: [
 									new TextRun({
-										text: `- ${activity}`,
+										// Use the 'content' property from the SpecialActivity object
+										text: `- ${activity.content}`,
 									}),
 								],
 								spacing: { after: 100 },
@@ -222,14 +247,14 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 					});
 				}
 
-				// List regular activities
-				if (day.activities && day.activities.length > 0) {
-					day.activities.forEach((activity) => {
+				if (dayDetails.activities && dayDetails.activities.length > 0) {
+					dayDetails.activities.forEach((activity) => {
 						sections.push(
 							new Paragraph({
 								children: [
 									new TextRun({
-										text: `• ${activity}`,
+										// Use the 'content' property from the Activity object
+										text: `• ${activity.content}`,
 									}),
 								],
 								spacing: { after: 100 },
@@ -279,17 +304,17 @@ export const generateWordDocument = async (reportData: ReportData, exportOptions
 			],
 		});
 
-		// Generate the document buffer
-		const buffer = await Packer.toBuffer(doc);
-
-		// Convert buffer to base64 for file system
-		const base64 = buffer.toString("base64");
+		// Generate the document as a Base64 string, which is platform-agnostic
+		const base64 = await Packer.toBase64String(doc);
 
 		// Create file path
 		const fileUri = `${FileSystem.documentDirectory}${fileName}.docx`;
 
-        return fileUri
-		
+		// Write the Base64 string directly to the file
+		await FileSystem.writeAsStringAsync(fileUri, base64, {
+			encoding: FileSystem.EncodingType.Base64,
+		});
+		return fileUri;
 	} catch (error) {
 		console.error("Error generating Word document:", error);
 		throw new Error("Failed to generate Word document");

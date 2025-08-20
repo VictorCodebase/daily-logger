@@ -22,6 +22,42 @@ export function getFormattedTime(date: Date = new Date()): string {
 	return `${hours}:${minutes}:${seconds}`;
 }
 
+export const formatHumanFriendlyDate = (dateString: string): string => {
+	const date = new Date(dateString);
+	const options: Intl.DateTimeFormatOptions = {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	};
+
+	const formattedDate = new Intl.DateTimeFormat("en-US", options).format(date);
+
+	// Add the ordinal suffix (st, nd, rd, th) to the day
+	const day = date.getDate();
+	let suffix;
+	if (day > 3 && day < 21) suffix = "th";
+	else {
+		switch (day % 10) {
+			case 1:
+				suffix = "st";
+				break;
+			case 2:
+				suffix = "nd";
+				break;
+			case 3:
+				suffix = "rd";
+				break;
+			default:
+				suffix = "th";
+				break;
+		}
+	}
+
+	// Find the day part in the formatted string and insert the suffix
+	return formattedDate.replace(new RegExp(`\\b${day}\\b`), `${day}${suffix}`);
+};
+
 /**
  * Converts a raw date string (e.g., from a date picker) into a SQLite-friendly format.
  * This is useful if your input format is different from the target format.
