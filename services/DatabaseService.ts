@@ -106,20 +106,10 @@ async function createTables(db: SQLite.SQLiteDatabase) {
  * @returns The SQLite database instance.
  */
 export default async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
-	// Test existing connection
-	if (dbInstance) {
-		try {
-			await dbInstance.getFirstAsync("SELECT 1");
-			return dbInstance;
-		} catch (error) {
-			console.warn("Database connection lost, reconnecting...", error);
-			dbInstance = null;
-		}
-	}
-
 	if (!dbInstance) {
 		dbInstance = await SQLite.openDatabaseAsync("daily-logger.db");
-		await dbInstance.execAsync("PRAGMA foreign_keys = ON;");
+
+        await dbInstance.execAsync("PRAGMA foreign_keys = ON;");
 		console.log("Database opened successfully.");
 		await createTables(dbInstance);
 	}
