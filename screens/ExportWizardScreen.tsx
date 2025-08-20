@@ -59,6 +59,8 @@ export default function ExportPage() {
 		outputFormat: "pdf",
 		documentFormat: "professional",
 	});
+	const isWordOutput = exportOptions.outputFormat === "word";
+	const defaultFormatting = "proffesional"
 
 	
 	useEffect(() => {
@@ -726,54 +728,59 @@ export default function ExportPage() {
 					{renderCheckboxOption("includeConclusions", "Conclusions", "Include your concluding remarks")}
 				</View>
 
-				{/* !  */}
+				{/* Document formatting */}
 				<View style={tw`mt-5`}>
 					<Text style={tw`text-lg font-semibold text-[${colors.text.primary}] mb-4`}>Document Formatting</Text>
 
+					{/* The entire formatting section is now disabled when word is selected */}
 					<TouchableOpacity
-						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${
+						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${isWordOutput ? "opacity-50" : ""} ${
 							exportOptions.documentFormat === "professional" ? "border-green-500 bg-green-50" : ""
 						}`}
 						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "professional" })}
+						disabled={isWordOutput}
 					>
-						<Text style={tw`font-bold text-base`}>Professional</Text>
-						<Text style={tw`text-xs text-gray-600 mt-1`}>
+						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Professional</Text>
+						<Text style={tw`text-xs text-gray-600 mt-1 ${isWordOutput ? "text-gray-400" : ""}`}>
 							Clean, formal report with distinct sections and borders. (Default)
 						</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
-						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${
+						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${isWordOutput ? "opacity-50" : ""} ${
 							exportOptions.documentFormat === "monotone" ? "border-green-500 bg-green-50" : ""
 						}`}
 						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "monotone" })}
+						disabled={isWordOutput}
 					>
-						<Text style={tw`font-bold text-base`}>Monotone</Text>
-						<Text style={tw`text-xs text-gray-600 mt-1`}>
+						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Monotone</Text>
+						<Text style={tw`text-xs text-gray-600 mt-1 ${isWordOutput ? "text-gray-400" : ""}`}>
 							Strict, black-and-white, text-based report for official submissions.
 						</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
-						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${
+						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${isWordOutput ? "opacity-50" : ""} ${
 							exportOptions.documentFormat === "simple" ? "border-green-500 bg-green-50" : ""
 						}`}
 						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "simple" })}
+						disabled={isWordOutput}
 					>
-						<Text style={tw`font-bold text-base`}>Simple</Text>
-						<Text style={tw`text-xs text-gray-600 mt-1`}>
+						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Simple</Text>
+						<Text style={tw`text-xs text-gray-600 mt-1 ${isWordOutput ? "text-gray-400" : ""}`}>
 							A clean, no-frills design with subtle colors and minimal styling.
 						</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
-						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${
+						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${isWordOutput ? "opacity-50" : ""} ${
 							exportOptions.documentFormat === "creative" ? "border-green-500 bg-green-50" : ""
 						}`}
 						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "creative" })}
+						disabled={isWordOutput}
 					>
-						<Text style={tw`font-bold text-base`}>Creative</Text>
-						<Text style={tw`text-xs text-gray-600 mt-1`}>
+						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Creative</Text>
+						<Text style={tw`text-xs text-gray-600 mt-1 ${isWordOutput ? "text-gray-400" : ""}`}>
 							Modern, stylish design without bounding boxes, using subtle lines and varied fonts.
 						</Text>
 					</TouchableOpacity>
@@ -789,7 +796,9 @@ export default function ExportPage() {
 									? `border-[${colors.primary.main}] bg-[${colors.primary[50]}]`
 									: `border-[${colors.border.primary}] bg-[${colors.background.card}]`
 							}`}
-							onPress={() => setExportOptions((prev) => ({ ...prev, outputFormat: "pdf" }))}
+							onPress={() => {
+								setExportOptions((prev) => ({ ...prev, outputFormat: "pdf" }))
+							}}
 						>
 							<View style={tw`items-center`}>
 								<Feather
@@ -817,7 +826,7 @@ export default function ExportPage() {
 									? `border-[${colors.primary.main}] bg-[${colors.primary[50]}]`
 									: `border-[${colors.border.primary}] bg-[${colors.background.card}]`
 							}`}
-							onPress={() => setExportOptions((prev) => ({ ...prev, outputFormat: "word" }))}
+							onPress={() => setExportOptions((prev) => ({ ...prev, outputFormat: "word", documentFormat: "word" }))}
 						>
 							<View style={tw`items-center`}>
 								<Feather
@@ -842,7 +851,6 @@ export default function ExportPage() {
 						</TouchableOpacity>
 					</View>
 				</View>
-
 				{/* Export Button */}
 				<TouchableOpacity
 					style={tw`bg-[${colors.primary.main}] p-4 rounded-xl mb-8 flex-row items-center justify-center`}

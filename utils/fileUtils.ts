@@ -145,6 +145,9 @@ export async function generateReport(
 				case "creative":
 					htmlContent = generateCreativeHTML(reportData, exportOptions);
 					break;
+                case "word": // default to creative - just a temporary fix
+                    htmlContent = generateCreativeHTML(reportData, exportOptions);
+					break;
 				default:
 					// Fallback to a default format if an invalid one is somehow selected
 					htmlContent = generateProfessionalHTML(reportData, exportOptions);
