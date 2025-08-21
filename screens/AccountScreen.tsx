@@ -225,6 +225,7 @@ export default function AccountScreen() {
 				onPress: async () => {
 					setIsSaving(true);
 					try {
+						console.log("responsibilities: ", responsibilities)
 						const result = await saveAccountChanges(formData, user, responsibilities, userContext);
 						Alert.alert(result.status === "success" ? "Success" : "Error", result.message);
 					} catch (error) {

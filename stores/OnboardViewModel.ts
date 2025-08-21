@@ -1,5 +1,5 @@
 import { userExists, readUser } from "../services/DatabaseReadService";
-import { createUser } from "../services/DatabaseCreateService";
+import { createResponsibilitiesSummary, createUser } from "../services/DatabaseCreateService";
 import { getHash, comparePassword } from "../utils/AuthUtil"; 
 import { User, WorkSchedule} from "../models/ViewModel_Models";
 
@@ -65,9 +65,13 @@ export async function signUpUser(
 			};
 		}
 
+		// create the user's summary - empty initially
+		const userDefaultResponsibilities = ""
+		await createResponsibilitiesSummary(userDefaultResponsibilities, newUserId)
+
 		// --- 5. Update the application-wide UserContext ---
 		const newUser: User = {
-			user_id: parseInt(newUserId.toString()),
+			user_id: newUserId,
 			name,
 			email,
 			avatar,

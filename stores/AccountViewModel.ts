@@ -5,6 +5,7 @@ import { updateResponsibilitiesSummary } from "../services/DatabaseUpdateService
 import { comparePassword, getHash } from "../utils/AuthUtil";
 import { deleteLogTemplate } from "../services/DatabaseDeleteService";
 import { ImageUploadResult, User, WorkSchedule, ResponsibilitiesSummary } from "../models/ViewModel_Models";
+import { createResponsibilitiesSummary } from "../services/DatabaseCreateService";
 
 export interface Response {
 	status: "success" | "error";
@@ -33,7 +34,7 @@ export interface TemplateItem {
 async function getResponsibilitiesSummary(user_id: number): Promise<ResponsibilitiesSummary | null> {
 	try {
 		const summaryId = await responsibilitiesSummaryExists(user_id);
-		// console.log("summsummary idary id: ", summaryId);
+		console.log("summary id: ", summaryId);
 		if (summaryId) {
 			return await readResponsibilitySummary(summaryId);
 		}
@@ -64,6 +65,8 @@ export async function initializeAccountData(user: User): Promise<{
 		// Get responsibilities summary
 
 		const responsibilities = await getResponsibilitiesSummary(user.user_id);
+		console.log("responsibilities for user: ", responsibilities);
+		console.log("User l;ogged in: ", user);
 
 		// Get all templates
 		const templatesResult = await listTemplates();
@@ -152,6 +155,7 @@ export async function saveAccountChanges(
 	userContext: any
 ): Promise<Response> {
 	try {
+		console.log("Called")
 		// Validate form data
 		const validation = validateAccountForm(formData);
 		if (validation.status === "error") {
@@ -191,16 +195,30 @@ export async function saveAccountChanges(
 		}
 
 		// Update responsibilities summary if it has content
+		console.log("checking for content in responsibilities summary")
 		if (formData.responsibilitiesContent.trim()) {
+			console.log("found 'em")
+
+			console.log("checking for responsibilities sent from view")
 			if (responsibilities) {
-				// Update existing summary
-				const responsibilitiesUpdateSuccess = await updateResponsibilitiesSummary(
-					responsibilities.responsibilities_id,
-					formData.responsibilitiesContent.trim()
-				);
-				if (!responsibilitiesUpdateSuccess) {
-					return { status: "error", message: "Failed to update responsibilities summary." };
+				console.log("found 'em")
+
+				console.log("checking for the responsibilities for user id")
+				//check if responsibilities exist for the user
+				const summaryId = await responsibilitiesSummaryExists(currentUser.user_id);
+
+				if (summaryId) {
+					// Update existing summary
+					const responsibilitiesUpdateSuccess = await updateResponsibilitiesSummary(
+						responsibilities.responsibilities_id,
+						formData.responsibilitiesContent.trim()
+					);
+					if (!responsibilitiesUpdateSuccess) {
+						return { status: "error", message: "Failed to update responsibilities summary." };
+					}
 				}
+				console.log("Creating a new responsibilities summary")
+				await createResponsibilitiesSummary(responsibilities.content, currentUser.user_id)
 			} else {
 				// Create new summary if needed (you might need to add a create function)
 				console.log("Creating new responsibilities summary...");

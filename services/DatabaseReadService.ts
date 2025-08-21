@@ -77,7 +77,7 @@ export async function responsibilitiesSummaryExists(user_id: number): Promise<nu
 		// console.log("User id", user_id);
 		const db = await setupDatabase();
 		const result = await db.getFirstAsync<{ responsibilities_id: number }>(
-			`SELECT responsibilities_id FROM Responsibilities_Summary WHERE user_id = 2;`
+			`SELECT responsibilities_id FROM Responsibilities_Summary WHERE user_id = ?;`, [user_id]
 		);
 		return result?.responsibilities_id || null;
 	} catch (error) {

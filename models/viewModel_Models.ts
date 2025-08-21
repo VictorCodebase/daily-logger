@@ -118,5 +118,5 @@ export interface ExportOptions {
 	includeDailyLog: boolean;
 	includeConclusions: boolean;
 	outputFormat: "pdf" | "word";
-	documentFormat: "professional" | "monotone" | "simple" | "creative";
+	documentFormat: "professional" | "monotone" | "simple" | "creative" | "word";
 }
