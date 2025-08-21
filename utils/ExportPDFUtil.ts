@@ -325,7 +325,7 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
         options.includeResponsibilitiesSummary && data.responsibilitiesSummary
             ? `
         <div class="section">
-            <div class="section-title">Monthly Summary of Responsibilities</div>
+            <div class="section-title">Summary of Responsibilities</div>
             <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
         </div>
         `
@@ -355,7 +355,7 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
         ${
         options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
             ? `
-        <div class="section page-break">
+        <div class="section">
             <div class="section-title">Detailed Daily Log</div>
             ${data.detailedDailyLog
             .map((dayDetails) => {
@@ -566,7 +566,7 @@ export const generateMonotoneHTML = (data: ReportData, options: ExportOptions): 
         ${
         options.includeResponsibilitiesSummary && data.responsibilitiesSummary
             ? `
-        <div class="section-title">Monthly Summary of Responsibilities</div>
+        <div class="section-title">Summary of Responsibilities</div>
         <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
         `
             : ""
@@ -780,7 +780,7 @@ export const generateSimpleHTML = (data: ReportData, options: ExportOptions): st
         options.includeResponsibilitiesSummary && data.responsibilitiesSummary
             ? `
         <div class="section">
-            <div class="section-title">Monthly Summary of Responsibilities</div>
+            <div class="section-title">Summary of Responsibilities</div>
             <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
         </div>
         `
@@ -810,7 +810,7 @@ export const generateSimpleHTML = (data: ReportData, options: ExportOptions): st
         ${
         options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
             ? `
-        <div class="section page-break">
+        <div class="section">
             <div class="section-title">Detailed Daily Log</div>
             ${data.detailedDailyLog
             .map(
@@ -1051,7 +1051,7 @@ export const generateCreativeHTML = (data: ReportData, options: ExportOptions): 
         ${
         options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
             ? `
-        <div class="section page-break">
+        <div class="section">
             <div class="section-title">Detailed Daily Log</div>
             ${data.detailedDailyLog
             .map(
@@ -1181,7 +1181,7 @@ export const savePDFToDevice = async (html: string, fileName: string): Promise<s
 //     }
 
 //     if (options.includeResponsibilitiesSummary && data.responsibilitiesSummary) {
-//         content += `MONTHLY SUMMARY OF RESPONSIBILITIES\n`;
+//         content += `Summary OF RESPONSIBILITIES\n`;
 //         content += `${"-".repeat(40)}\n`;
 //         content += `${data.responsibilitiesSummary}\n\n`;
 //     }
@@ -1354,7 +1354,7 @@ export const savePDFToDevice = async (html: string, fileName: string): Promise<s
 //     if (options.includeResponsibilitiesSummary && data.responsibilitiesSummary) {
 //         children.push(
 //             new Paragraph({
-//                 text: "MONTHLY SUMMARY OF RESPONSIBILITIES",
+//                 text: "Summary OF RESPONSIBILITIES",
 //                 heading: HeadingLevel.HEADING_1,
 //             }),
 //             new Paragraph({
