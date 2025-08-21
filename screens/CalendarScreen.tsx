@@ -426,12 +426,12 @@ export default function CalendarPage() {
 										<TouchableOpacity
 											key={dayIndex}
 											style={tw`flex-1 aspect-square p-1 m-0.5 rounded-lg ${
-												dayId
+												!isCurrentMonthDay
+													? `bg-[${colors.surface.elevated}] border border-[${colors.border.primary}]`
+													: dayId
 													? isSelected
 														? `bg-[${colors.primary.dark}] border-2 border-[${colors.primary.main}]`
 														: `bg-[${colors.primary.main}]`
-													: isCurrentMonthDay
-													? `bg-[${colors.surface.elevated}] border border-[${colors.border.primary}]`
 													: `bg-[${colors.surface.disabled}]`
 											} ${
 												isTodayDate && !dayId
@@ -445,10 +445,10 @@ export default function CalendarPage() {
 											<View style={tw`flex-1 justify-center items-center relative`}>
 												<Text
 													style={tw`text-sm font-medium ${
-														dayId
-															? `text-[${colors.text.white}]`
-															: isCurrentMonthDay
-															? `text-[${colors.text.primary}]`
+														isCurrentMonthDay
+															? dayId
+																? `text-[${colors.text.white}]`
+																: `text-[${colors.text.primary}]`
 															: `text-[${colors.text.tertiary}]`
 													}`}
 												>
