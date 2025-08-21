@@ -74,8 +74,8 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
             
             .header {
                 text-align: center;
-                margin-bottom: 40px;
-                padding-bottom: 20px;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
                 border-bottom: 3px solid #4CAF50;
             }
             
@@ -102,8 +102,7 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
             }
             
             .section {
-                margin-bottom: 35px;
-                break-inside: avoid;
+                margin-bottom: 40px;
             }
             
             .section-title {
@@ -254,9 +253,7 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
                 font-style: italic;
             }
             
-            .page-break {
-                page-break-before: always;
-            }
+
             
             .signature-section {
                 margin-top: 60px;
@@ -274,9 +271,6 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
                 body { 
                     padding: 20px;
                 }
-                .page-break {
-                    page-break-before: always;
-                }
             }
         </style>
     </head>
@@ -289,84 +283,84 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
         </div>
 
         ${
-        options.includeUserRoles && data.userRoles
-            ? `
+		options.includeUserRoles && data.userRoles
+			? `
         <div class="section">
             <div class="info-box">
                 <span class="info-label">Position:</span> ${data.userRoles}
             </div>
         </div>
         `
-            : ""
-    }
+			: ""
+	}
 
         ${
-        options.includeWorkSchedule && data.workSchedule
-            ? `
+		options.includeWorkSchedule && data.workSchedule
+			? `
         <div class="section">
             <div class="section-title">Work Schedule</div>
             <div class="work-schedule">
                 ${data.workSchedule
-            .map(
-                (schedule) => `
+			.map(
+				(schedule) => `
                     <div class="work-schedule-item">
                         ${formatWorkSchedulePeriod(schedule)}
                     </div>
                 `
-            )
-            .join("")}
+			)
+			.join("")}
             </div>
         </div>
         `
-            : ""
-    }
+			: ""
+	}
 
         ${
-        options.includeResponsibilitiesSummary && data.responsibilitiesSummary
-            ? `
+		options.includeResponsibilitiesSummary && data.responsibilitiesSummary
+			? `
         <div class="section">
             <div class="section-title">Summary of Responsibilities</div>
             <div class="content">${data.responsibilitiesSummary.replace(/\n/g, "<br>")}</div>
         </div>
         `
-            : ""
-    }
+			: ""
+	}
 
         ${
-        options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0
-            ? `
+		options.includeKeyContributions && data.keyContributions && data.keyContributions.length > 0
+			? `
         <div class="section">
             <div class="section-title">Key Contributions</div>
             ${data.keyContributions
-            .map(
-                (contribution, index) => `
+			.map(
+				(contribution, index) => `
                 <div class="contribution">
                     <div class="contribution-title">${index + 1}. ${contribution.title}</div>
                     <div class="content">${contribution.content.replace(/\n/g, "<br>")}</div>
                 </div>
             `
-            )
-            .join("")}
+			)
+			.join("")}
         </div>
         `
-            : ""
-    }
+			: ""
+	}
 
         ${
-        options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
-            ? `
+		options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
+			? `
         <div class="section">
             <div class="section-title">Detailed Daily Log</div>
             ${data.detailedDailyLog
-            .map((dayDetails) => {
-                if (!dayDetails.day) return "";
+			.map((dayDetails) => {
+				if (!dayDetails.day) return "";
 
-                const day = dayDetails.day;
-                const dayDate = new Date(day.date + "T00:00:00");
-                const weekday = dayDate.toLocaleDateString("en-US", { weekday: "long" });
-                const formattedDate = formatDate(day.date);
+				const day = dayDetails.day;
+				const dayDate = new Date(day.date + "T00:00:00");
+				const weekday = dayDate.toLocaleDateString("en-US", { weekday: "long" });
+				const formattedDate = formatDate(day.date);
 
-                return `
+				return `
                 <div class="day-entry">
                     <div class="day-header">
                         ${formattedDate} - ${weekday.toUpperCase()}
@@ -378,51 +372,51 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
                     </div>
 
                     ${
-                dayDetails.activities && dayDetails.activities.length > 0
-                    ? `
+				dayDetails.activities && dayDetails.activities.length > 0
+					? `
                         <div class="activity-list">
                             ${dayDetails.activities
-                    .map(
-                        (activity) => `
+					.map(
+						(activity) => `
                                 <div class="activity-item">
                                     ${formatActivity(activity)}
                                 </div>
                             `
-                    )
-                    .join("")}
+					)
+					.join("")}
                         </div>
                     `
-                    : ""
-            }
+					: ""
+			}
 
                     ${
-                options.includeSpecialActivities && dayDetails.specialActivities && dayDetails.specialActivities.length > 0
-                    ? `
+				options.includeSpecialActivities && dayDetails.specialActivities && dayDetails.specialActivities.length > 0
+					? `
                         <div class="special-activities">
                             <div class="special-activities-title">Special Activities</div>
                             ${dayDetails.specialActivities
-                    .map(
-                        (spActivity) => `
+					.map(
+						(spActivity) => `
                                 <div class="special-activity-item">• ${spActivity.content}</div>
                             `
-                    )
-                    .join("")}
+					)
+					.join("")}
                         </div>
                     `
-                    : ""
-            }
+					: ""
+			}
                 </div>
                 `;
-            })
-            .join("")}
+			})
+			.join("")}
         </div>
         `
-            : ""
-    }
+			: ""
+	}
 
         ${
-        options.includeConclusions && data.conclusions
-            ? `
+		options.includeConclusions && data.conclusions
+			? `
         <div class="section">
             <div class="section-title">Conclusion</div>
             <div class="conclusion">
@@ -430,8 +424,8 @@ export const generateProfessionalHTML = (data: ReportData, options: ExportOption
             </div>
         </div>
         `
-            : ""
-    }
+			: ""
+	}
 
         <div class="signature-section">
             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -517,9 +511,7 @@ export const generateMonotoneHTML = (data: ReportData, options: ExportOptions): 
                 font-size: 12px;
                 margin-bottom: 10px;
             }
-            .page-break {
-                page-break-before: always;
-            }
+
             .signature-section {
                 margin-top: 50px;
                 border-top: 1px solid #000;
@@ -585,7 +577,7 @@ export const generateMonotoneHTML = (data: ReportData, options: ExportOptions): 
         </div>
         `
         )
-        .join("")}
+        .join("")} 
         `
             : ""
     }
@@ -593,7 +585,7 @@ export const generateMonotoneHTML = (data: ReportData, options: ExportOptions): 
         ${
         options.includeDailyLog && data.detailedDailyLog && data.detailedDailyLog.length > 0
             ? `
-        <div class="page-break section-title">Detailed Daily Log</div>
+        <div class="section-title">Detailed Daily Log</div>
         ${data.detailedDailyLog
         .map(
             (dayDetails) => `
@@ -696,7 +688,7 @@ export const generateSimpleHTML = (data: ReportData, options: ExportOptions): st
                 color: #666;
             }
             .section {
-                margin-bottom: 25px;
+                margin-top: 25px;
             }
             .section-title {
                 font-size: 20px;
