@@ -39,7 +39,6 @@ const BottomTabNavigator = () => {
 		<Tab.Navigator
 			screenOptions={({ route }) => ({
 				headerShown: true,
-				headerRight: () => <UserIcon />,
 				tabBarIcon: ({ focused, color, size }) => {
 					let iconName: keyof typeof Ionicons.glyphMap;
 					if (route.name === "Home") {
