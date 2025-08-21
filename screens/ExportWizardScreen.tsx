@@ -748,14 +748,14 @@ export default function ExportPage() {
 
 					<TouchableOpacity
 						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${isWordOutput ? "opacity-50" : ""} ${
-							exportOptions.documentFormat === "monotone" ? "border-green-500 bg-green-50" : ""
+							exportOptions.documentFormat === "creative" ? "border-green-500 bg-green-50" : ""
 						}`}
-						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "monotone" })}
+						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "creative" })}
 						disabled={isWordOutput}
 					>
-						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Monotone</Text>
+						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Creative</Text>
 						<Text style={tw`text-xs text-gray-600 mt-1 ${isWordOutput ? "text-gray-400" : ""}`}>
-							Strict, black-and-white, text-based report for official submissions.
+							Modern, stylish design without bounding boxes, using subtle lines and varied fonts.
 						</Text>
 					</TouchableOpacity>
 
@@ -774,14 +774,14 @@ export default function ExportPage() {
 
 					<TouchableOpacity
 						style={tw`p-4 border border-gray-300 rounded-lg mb-3 ${isWordOutput ? "opacity-50" : ""} ${
-							exportOptions.documentFormat === "creative" ? "border-green-500 bg-green-50" : ""
+							exportOptions.documentFormat === "monotone" ? "border-green-500 bg-green-50" : ""
 						}`}
-						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "creative" })}
+						onPress={() => setExportOptions({ ...exportOptions, documentFormat: "monotone" })}
 						disabled={isWordOutput}
 					>
-						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Creative</Text>
+						<Text style={tw`font-bold text-base ${isWordOutput ? "text-gray-400" : ""}`}>Monotone</Text>
 						<Text style={tw`text-xs text-gray-600 mt-1 ${isWordOutput ? "text-gray-400" : ""}`}>
-							Modern, stylish design without bounding boxes, using subtle lines and varied fonts.
+							Strict, black-and-white, text-based report.
 						</Text>
 					</TouchableOpacity>
 				</View>
@@ -797,7 +797,7 @@ export default function ExportPage() {
 									: `border-[${colors.border.primary}] bg-[${colors.background.card}]`
 							}`}
 							onPress={() => {
-								setExportOptions((prev) => ({ ...prev, outputFormat: "pdf" }))
+								setExportOptions((prev) => ({ ...prev, outputFormat: "pdf" }));
 							}}
 						>
 							<View style={tw`items-center`}>
