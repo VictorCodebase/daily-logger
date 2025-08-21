@@ -3,11 +3,12 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 
 import { createResponsibilitiesSummary } from "../services/DatabaseCreateService";
-import { dayExists, readDay, readUser, responsibilitiesSummaryExists } from "../services/DatabaseReadService";
+import { dayExists, readDay, readResponsibilitySummary, readUser, responsibilitiesSummaryExists } from "../services/DatabaseReadService";
 import { KeyContribution, WorkSchedulePeriod, DayDetails, ExportOptions } from "../models/ViewModel_Models";
 import { extractWorkSchedulePeriods, formatDate, getDatesInRange, ReportData } from "../stores/ExportViewModel";
 import { generateCreativeHTML, generateMonotoneHTML, generateProfessionalHTML, generateSimpleHTML, savePDFToDevice } from "./ExportPDFUtil";
 import { generateWordDocument } from "./ExportWordUtil";
+import { updateResponsibilitiesSummary } from "../services/DatabaseUpdateService";
 
 // /**
 //  * Save Word document (.docx) to device storage
@@ -76,6 +77,9 @@ export async function generateReport(
 				} catch (error) {
 					console.error("Error creating responsibilities summary:", error);
 				}
+			}else{
+				await updateResponsibilitiesSummary(summaryId, responsibilitiesSummaryInput)
+				responsibilitiesSummaryContent = responsibilitiesSummaryInput
 			}
 		}
 
@@ -108,6 +112,7 @@ export async function generateReport(
 				reportData.workSchedule = workSchedule;
 			}
 		}
+
 
 		if (exportOptions.includeResponsibilitiesSummary && responsibilitiesSummaryContent) {
 			reportData.responsibilitiesSummary = responsibilitiesSummaryContent;
