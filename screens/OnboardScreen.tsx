@@ -330,7 +330,8 @@ export default function LoginSignupScreen() {
 							</TouchableOpacity>
 
 							{/* Job Details */}
-							<Text style={tw`text-lg font-semibold text-[${colors.text.primary}] mb-3 mt-4`}>Job Details</Text>
+							<Text style={tw`text-lg font-semibold text-[${colors.text.primary}]  mt-4`}>Job Details</Text>
+							<Text style={tw`text font-semibold text-[${colors.text.secondary}] mb-3`}>Please add a comma after each role to record it. i.e., Trainer, Presenter,</Text>
 							{/* Roles Section */}
 							<View style={tw`flex-row flex-wrap mb-2`}>
 								{roles.map((role, index) => (
