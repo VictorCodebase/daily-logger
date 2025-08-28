@@ -192,11 +192,11 @@ export default function LoginSignupScreen() {
 					<View style={tw`flex items-center mt-10 mb-8`}>
 						{/* Placeholder for your combined logo image */}
 						<View style={tw`w-24 h-24 bg-[${colors.surface.elevated}]  mb-2 `}>
-							<Image source={require("../assets/touch-icon-512x512.png")} style={{ width: 100, height: 100 }} />
+							<Image source={require("../assets/touch-icon-512x512.png")} style={{ width: 100, height: 100, borderRadius: 20 }} />
 						</View>
 						<Text style={tw`text-3xl font-bold text-[${colors.text.primary}]`}>Welcome</Text>
 						<Text style={tw`text-center text-lg text-[${colors.text.secondary}] w-[70] pt-2`}>
-							{isLogin ? "Sign in to your Mbwaa Media Activity Logger" : "Set up your Mbwaa media Activity logger Account"}
+							{isLogin ? "Sign in to your Activity Logger account" : "Set up your Activity logger Account"}
 						</Text>
 					</View>
 
@@ -348,7 +348,7 @@ export default function LoginSignupScreen() {
 							</View>
 							<TextInput
 								style={tw`bg-[${colors.background.secondary}] text-[${colors.text.primary}] rounded-xl h-12 px-4 mb-4`}
-								placeholder="Enter roles (e.g., Manager, Trainer)"
+								placeholder="Enter roles (e.g., Manager, Trainer, )"
 								placeholderTextColor={colors.text.secondary}
 								value={roleInput}
 								onChangeText={handleAddRole}

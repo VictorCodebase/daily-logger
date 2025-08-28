@@ -4,7 +4,7 @@
     "slug": "activity-logger",
     "version": "2.2.1",
     "orientation": "portrait",
-    "icon": "./assets/icon_new.png",
+    "icon": "./assets/icon4.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
